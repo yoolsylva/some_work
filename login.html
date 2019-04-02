@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>APF Tool</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script>if (typeof module === 'object') {
+    window.module = module;
+    module = undefined;
+  }</script>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+          integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+          integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+          crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+          integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+          crossorigin="anonymous"></script>
+  <link href="assets/css/login.css" rel="stylesheet">
+  <link href="assets/css/button.css" rel="stylesheet">
+</head>
+<body>
+<div id="overlay">
+  <div id="progstat"></div>
+  <div id="progress"></div>
+</div>
+<div id="login-panel">
+  <div>
+    <img class="logo" src="assets/img/apf_tool_logo.png">
+  </div>
+  <div>
+    <input class="login-btn grow" type="image" onclick="loginFB1()" src="assets/img/apf_tool_button_login.png">
+  </div>
+  <div class="footer">
+    <p>Copyright © 2019 by KingContent.pro</p>
+    <p>Made in Vietnam</p>
+  </div>
+</div>
+<div id="main-panel" style="display: none">
+  <div class="profile-container">
+    <div class="profile-title">
+      <input id="btn-close" type="image" src="assets/img/xbutton.png" onclick="closeApp()">
+      <p>PROFILE</p>
+    </div>
+    <div class="profile-info">
+      <div class="row">
+        <div class="col-1"></div>
+        <div class="col-4">
+          <img class="profile-avatar" id="fb-avatar"
+               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOuz-KqBeVSVh8wdcivMn3ikps08XGVbTvrHIMR-T6MWYa9Uhk">
+        </div>
+        <div class="col-6">
+          <div class="row" style="margin-top: 30px">
+            <p id="fb-name" style="-webkit-text-fill-color: aliceblue;">Nguyen Quyet Thang</p>
+          </div>
+          <div class="row">
+            <p id="fb-uid" style="-webkit-text-fill-color: aliceblue;">UID: 132432532543</p>
+          </div>
+          <div class="row">
+            <button class="btn success" id="btn-confirm" onclick="confirmDataInfo()">Xác nhận</button>
+            <button class="btn success" id="btn-start" style="margin-left: 10px" onclick="start()">Bắt đầu</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="history-bar">
+      <div class="history-bar-column">
+        <div>
+          <h4>16</h4>
+        </div>
+        <div>
+          <p>Lịch đã lên</p>
+        </div>
+      </div>
+      <div class="history-bar-column">
+        <div>
+          <h4>22</h4>
+        </div>
+        <div>
+          <p>Bộ sưu tập</p>
+        </div>
+      </div>
+      <div class="history-bar-column">
+        <div>
+          <h4>322</h4>
+        </div>
+        <div>
+          <p>Content đã lưu</p>
+        </div>
+      </div>
+      <div class="history-bar-column">
+        <div>
+          <h4>66</h4>
+        </div>
+        <div>
+          <p>Fanpage đã lưu</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <ul class="nav nav-tabs nav-justified" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="schedule-post-tab" data-toggle="tab" href="#schedule-post" role="tab" aria-controls="home"
+             aria-selected="true">Post</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="history-post-tab" data-toggle="tab" href="#history-post" role="tab" aria-controls="profile"
+             aria-selected="false">History</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="schedule-post" role="tabpanel" aria-labelledby="schedule-post-tab">
+          <ul class="ul-post" id="pending-post">
+
+          </ul>
+        </div>
+        <div class="tab-pane fade" id="history-post" role="tabpanel" aria-labelledby="history-post-tab">
+          <ul class="ul-post">
+            <li class="list-post">
+              <img class="post-thumpnail" src="https://asianfashion.com/wp-content/uploads/2017/03/l_p0047993305.jpg">
+              <h5>New fashion of the week</h5>
+              <img class="eye-icon" src="assets/img/eye-icon.png">
+              <p>Ngày tạo: 09/03/2019</p>
+              <p>Tổng content đăng: 26</p>
+              <p>Đếm ngược: 00:00:00</p>
+              <span>
+                <img src="assets/img/done.png">
+                <p>Hoàn tất</p>
+              </span>
+            </li>
+
+            <li class="list-post">
+              <img class="post-thumpnail" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToolyufgCwWMwS9p1AshYQc1O24Y4jE0B6F6CVjxTBdb0Arwq38g">
+              <h5>New Mobile Evolution</h5>
+              <img class="eye-icon" src="assets/img/eye-icon.png">
+              <p>Ngày tạo: 09/03/2019</p>
+              <p>Tổng content đăng: 26</p>
+              <p>Đếm ngược: 00:00:00</p>
+              <span>
+                <img src="assets/img/stop.png">
+                <p>Đã Hủy</p>
+              </span>
+            </li>
+            <li class="list-post">
+              <img class="post-thumpnail" src="https://e0.365dm.com/19/03/768x432/skysports-cristiano-ronaldo_4598963.jpg?20190306103516">
+              <h5>Ronaldo Hatrick</h5>
+              <img class="eye-icon" src="assets/img/eye-icon.png">
+              <p>Ngày tạo: 09/03/2019</p>
+              <p>Tổng content đăng: 26</p>
+              <p>Đếm ngược: 00:00:00</p>
+              <span>
+                <img src="assets/img/pause.png">
+                <p>Tạm dừng</p>
+              </span>
+            </li>
+
+            <li class="list-post">
+              <img class="post-thumpnail" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxAQDTNL0VtI84WsCu_3yDU83w-0_RSV2XhZeY_1QBZYtUwjo5JQ">
+              <h5>Hot asian girl</h5>
+              <img class="eye-icon" src="assets/img/eye-icon.png">
+              <p>Ngày tạo: 09/03/2019</p>
+              <p>Tổng content đăng: 26</p>
+              <p>Đếm ngược: 00:00:00</p>
+              <span>
+                <img src="assets/img/done.png">
+                <p>Hoàn tất</p>
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // You can also require other files to run in this process
+  require('./renderer.js')
+  const puppeteer = require('puppeteer-core');
+  const path = require('path');
+  const fs = require('fs');
+  const Store = require('electron-store');
+  const store = new Store();
+  const fetch = require('node-fetch');
+  const request = require("request");
+  const {base64encode, base64decode} = require('nodejs-base64');
+  const moment = require('moment');
+  const rimraf = require('rimraf');
+
+  let browserPath
+  let browser1, browser2, browser3, browser4, browser5
+  let page1, page2, page3, page4, page5
+  let isRunning = false
+  let isLogin = false
+  let timeoutPendingPost = []
+  let intervalUpdateTime = []
+
+  function createFile(filename, data) {
+    return new Promise((resolve, reject) => {
+      fs.open(filename, 'r', function (err, fd) {
+        if (err) {
+          fs.writeFile(filename, data, function (err) {
+            if (err) {
+              console.log(err);
+              return reject(err)
+            }
+            console.log("The file was saved!");
+            resolve()
+          });
+        } else {
+          console.log("The file exists!");
+          resolve()
+        }
+      });
+    })
+  }
+
+  async function checkLogin() {
+    //await sleep(600)
+    if (!store.get('slot1.name') || !store.get('slot1.id') || !store.get('slot1.picture') || !fs.existsSync(path.join(process.cwd(), 'facebook_account/slot1'))) {
+      return false
+    }
+    return true
+  }
+
+  function closeApp() {
+    const remote = require('electron').remote;
+    var window = remote.getCurrentWindow();
+    window.close();
+  }
+
+  //  This is main download function which takes the url of your image
+  function download(uri) {
+    return new Promise((resolve, reject) => {
+      let filename = base64encode(uri);
+      request.head(uri, function (err, res, body) {
+        if (err) return reject()
+        request(uri)
+          .pipe(fs.createWriteStream(path.join(process.cwd(), `/photo_upload/${filename}`)))
+          .on("close", function () {
+            resolve(path.join(process.cwd(), `/photo_upload/${filename}`))
+          });
+      });
+    })
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function loginFB1() {
+    await clearDataInfo()
+
+    const userDataDir = path.join(process.cwd(), `/facebook_account/slot1/`)
+    browser1 = await puppeteer.launch({
+      headless: false,
+      slowMo: 50,
+      userDataDir: userDataDir,
+      executablePath: browserPath,
+      args: [
+        `--window-size=1000,800`
+      ],
+    });
+    const pages = await browser1.pages();
+    page1 = pages[0]
+    await page1.setViewport({width: 1000, height: 800})
+    await page1.goto('https://facebook.com', {waitUntil: 'domcontentloaded'});
+    while (true) {
+      await sleep(500)
+      try {
+        const result = await page1.evaluate(() => {
+          var html = document.getElementsByTagName('html')[0].innerHTML
+          var re = new RegExp('"USER_ID":"(.*?)"')
+          var result = html.match(re);
+          var profile_id = result && result[1]
+          re = new RegExp('"NAME":"(.*?)"')
+          result = html.match(re);
+          var name = result && JSON.parse('"' + result[1] + '"')
+          var img = document.querySelector("a[title='Profile'] > span > img") && document.querySelector("a[title='Profile'] > span > img").getAttribute('src')
+          if (!profile_id || !name || !img) return null
+          alert('Đăng nhập thành công! Bấm Ok để quay lại app!')
+          return {profile_id, name, img}
+        })
+
+        if (!result) continue
+        await browser1.close()
+        const {profile_id, name, img} = result
+        console.log(result)
+
+        setMainScreen()
+        showDataInfo({profile_id, name, img})
+        break
+      } catch (e) {
+        console.error(e.message)
+      }
+    }
+  };
+
+  function setLoginScreen() {
+    document.getElementById("main-panel").style.display = 'none'
+    document.getElementById("login-panel").style.display = 'flex'
+  }
+
+  function setMainScreen() {
+    document.getElementById("main-panel").style.display = 'block'
+    document.getElementById("login-panel").style.display = 'none'
+  }
+
+  function clearDataInfo() {
+    return new Promise((resolve, reject) => {
+      store.delete(`slot1.id`)
+      store.delete(`slot1.name`)
+      store.delete(`slot1.picture`)
+      const userDataDir = path.join(process.cwd(), `/facebook_account/slot1`)
+      rimraf(userDataDir, function () {
+        resolve()
+      });
+    })
+  }
+
+  function saveDataInfo({profile_id, name, img}) {
+    store.set(`slot1.id`, profile_id)
+    store.set(`${profile_id}`, 'slot1')
+    store.set(`slot1.name`, name)
+    store.set(`slot1.picture`, img)
+  }
+
+  function getDataInfo(){
+    const profile_id = store.get('slot1.id')
+    const name = store.get('slot1.name')
+    const img = store.get('slot1.picture')
+    return {profile_id, name, img}
+  }
+
+  function showDataInfo({profile_id, name, img}){
+    document.getElementById('fb-avatar').setAttribute('src', img)
+    document.getElementById('fb-uid').innerText = profile_id
+    document.getElementById('fb-name').innerText = name
+  }
+
+  function confirmDataInfo(){
+    const profile_id = document.getElementById('fb-uid').innerText
+    const name = document.getElementById('fb-name').innerText
+    const img =  document.getElementById('fb-avatar').getAttribute('src')
+    saveDataInfo({profile_id, name, img})
+    alert('Success')
+  }
+
+  async function postToUser({page, profile_id, resJson, imageFiles}) {
+    page.on('dialog', async dialog => {
+      console.log(dialog.message());
+      await dialog.accept();
+    });
+    await page.setViewport({width: 800, height: 800})
+    await page.goto('https://facebook.com?hl=en', {waitUntil: 'domcontentloaded'});
+    await page.waitForSelector('div#pagelet_composer');
+    await page.click('div#pagelet_composer');
+    await page.waitForXPath('//div[@class="_1mf _1mj"] | //div[@data-testid="status-attachment-mentions-input"]')
+    const status = await page.$x('//div[@class="_1mf _1mj"] | //div[@data-testid="status-attachment-mentions-input"]');
+    await status[0].click()
+    await page.keyboard.type(resJson.content, {delay: 10});
+    const input = await page.$('input[type=file]')
+    imageFiles.length && await input.uploadFile(...imageFiles)
+    await sleep(1000)
+    while (true) {
+      const isDisable = await page.evaluate(() => {
+        return document.querySelector("button[data-testid=react-composer-post-button]").disabled
+      })
+      if (!isDisable) break
+      await sleep(50)
+    }
+    const share = await page.$('button[data-testid=react-composer-post-button]')
+    await share.click()
+    await sleep(4000)
+    /*let i = 1000
+    while(i--){
+      await sleep(50)
+      const post = await page.$x(`//div[@data-testid="newsFeedStream"]//a[contains(@href,"https://www.facebook.com/profile.php?id=${profile_id}")]/parent::div//div[@data-testid="story-subtitle"]/@id`)
+      if(!post.length) continue
+      const result = post[0].textContent.match(new RegExp('story_fbid=(.*?)&'))
+      const postId = result && result[1]
+      return postId
+    }
+    return null*/
+  }
+
+  async function postToPage({page, page_id, imageFiles, resJson}) {
+    page.on('dialog', async dialog => {
+      console.log(dialog.message());
+      await dialog.accept();
+    });
+    const url = `https://facebook.com/${page_id}?hl=en`
+    await page.setViewport({width: 800, height: 800})
+    await page.goto(url, {waitUntil: 'domcontentloaded'});
+    await page.waitForSelector('div[data-testid=status-attachment-mentions-input]')
+    await page.click('div[data-testid=status-attachment-mentions-input]')
+    await page.keyboard.type(resJson.content, {delay: 10});
+    await page.click('div[data-testid=photo-video-button]')
+    await page.waitForSelector("input[data-testid=media-attachment-add-photo]")
+    const input = await page.$("input[data-testid=media-attachment-add-photo]")
+    imageFiles.length && await input.uploadFile(...imageFiles)
+    await sleep(1000)
+    while (true) {
+      const isDisable = await page.evaluate(() => {
+        return document.querySelector("button[data-testid=react-composer-post-button]").disabled
+      })
+      if (!isDisable) break
+      await sleep(50)
+    }
+    await page.click('button[data-testid=react-composer-post-button]')
+    await sleep(4000)
+    /*let i = 1000
+    while(i--){
+      await sleep(50)
+      const post = await page.$x(`//a[contains(@href,"story_fbid=")]//span[contains(text(), "Just now")]/parent::abbr/parent::a/@href`)
+      if(!post.length) continue
+      const result = post[0].textContent.match(new RegExp('story_fbid=(.*?)&'))
+      const postId = result && result[1]
+      return postId
+    }
+    return null*/
+  }
+
+  async function postToGroup({page, group_id, imageFiles, resJson}) {
+    page.on('dialog', async dialog => {
+      console.log(dialog.message());
+      await dialog.accept();
+    });
+    const url = `https://facebook.com/${group_id}?hl=en`
+    await page.setViewport({width: 800, height: 800})
+    await page.goto(url, {waitUntil: 'domcontentloaded'});
+    await page.waitForSelector('[data-testid=status-attachment-mentions-input]')
+    await page.click('[data-testid=status-attachment-mentions-input]')
+    await page.keyboard.type(resJson.content, {delay: 10});
+    const input = await page.$('input[data-testid=media-sprout]')
+    imageFiles.length && await input.uploadFile(...imageFiles)
+    await sleep(500)
+    await page.waitForSelector('button[data-testid=react-composer-post-button]')
+    while (true) {
+      const isDisable = await page.evaluate(() => {
+        return document.querySelector("button[data-testid=react-composer-post-button]").disabled
+      })
+      if (!isDisable) break
+      await sleep(50)
+    }
+    await page.click('button[data-testid=react-composer-post-button]')
+    await sleep(4000)
+    /*let i = 1000
+    while(i--){
+      await sleep(50)
+      const post = await page.$x(`//a[contains(@href,"groups/${group_id}/permalink/")]//span[contains(text(), "Just now")]/parent::abbr/parent::a/@href`)
+      if(!post.length) continue
+      const result = post[0].textContent.match(new RegExp('permalink/(.*)'))
+      const postId = result && result[1]
+      return postId
+    }
+    return null*/
+  }
+
+  function printLog(text) {
+    console.log(text)
+  }
+
+  function clearLog() {
+  }
+
+  function getRandomBetween(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function appendPost({resJson, status, slotNumber}) {
+    const item = document.createElement('li')
+    item.setAttribute('class', 'list-post')
+    const img = document.createElement('img')
+    img.setAttribute('class', 'post-thumpnail')
+    img.setAttribute('src', resJson.images.length ? resJson.images[0] : 'assets/img/apf_tool_logo.png')
+    const h5 = document.createElement('h5')
+    h5.innerText = resJson.content
+    const imgEye = document.createElement('img')
+    imgEye.setAttribute('class', 'eye-icon')
+    imgEye.setAttribute('src', 'assets/img/eye-icon.png')
+
+    const now = moment(new Date()); //todays date
+    const end = moment(resJson.date_publish); // another date
+    const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : 0;
+    let totalTime = parseInt(duration.asSeconds())
+    //let totalTime = getRandomBetween(20, 30)
+    const {mnts, hrs, seconds} = convertSecondsToCountdown(totalTime)
+
+    const p1 = document.createElement('p')
+    p1.innerText = 'Ngày tạo: ' + moment(resJson.date_publish).format('DD/MM/YYYY')
+    const p2 = document.createElement('p')
+    p2.innerText = 'Tổng content đăng: ' + resJson.images.length
+    const spanStatus = document.createElement('span')
+    const imgStatus = document.createElement('img')
+    imgStatus.setAttribute('src', `assets/img/${status}.png`)
+    const pStatus = document.createElement('p')
+    pStatus.innerText = status === 'wait' ? 'Đang chờ' : ''
+    spanStatus.appendChild(imgStatus)
+    spanStatus.appendChild(pStatus)
+
+    item.appendChild(img)
+    item.appendChild(h5)
+    item.appendChild(p1)
+    item.appendChild(imgEye)
+    item.appendChild(p2)
+    const countdount = document.createElement('p')
+    countdount.innerText = `Đếm ngược: ${hrs}:${mnts}:${seconds}`
+    item.appendChild(countdount)
+    item.appendChild(spanStatus)
+
+    document.getElementById('pending-post').appendChild(item)
+
+    intervalUpdateTime.push(setInterval(() => {
+      if(totalTime <= 0) {
+        countdount.innerText = `Đếm ngược: 00:00:00`
+        return
+      }
+      const {hrs, mnts, seconds} = convertSecondsToCountdown(--totalTime)
+      countdount.innerText = `Đếm ngược: ${hrs}:${mnts}:${seconds}`
+    }, 1000))
+
+    timeoutPendingPost.push(setTimeout(async () => {
+      console.log('wait running')
+      await waitForRunningDone()
+      console.log('posting now')
+      imgStatus.setAttribute('src', `assets/img/play.png`)
+      pStatus.innerText = 'Đang post...'
+      let browser
+      try {
+        isRunning = true
+        const profile_id = resJson.profile_id
+        const imageFiles = await Promise.all(resJson.images.map(image => {
+          return download(image)
+        }))
+        const userDataDir = path.join(process.cwd(), `/facebook_account/${slotNumber}/`)
+        browser = await puppeteer.launch({
+          headless: false,
+          slowMo: 50,
+          userDataDir: userDataDir,
+          executablePath: browserPath,
+          args: [
+            `--window-size=800,800`,
+            //'--window-position=0,0'
+          ],
+        });
+        const pages = await browser.pages();
+        const page = pages[0]
+        await page.evaluate(() => window.open('https://www.google.com', 'page', 'height=800,width=800,top=0,left=700'));
+        const newWindowTargetPage = await browser.waitForTarget(target => target.url() === 'https://www.google.com/');
+        const newPage = await newWindowTargetPage.page()
+
+        await page.evaluate(() => window.open('https://www.google.com.vn/', 'group', 'height=800,width=800,top=0,left=1100'));
+        const newWindowTargetGroup = await browser.waitForTarget(target => target.url() === 'https://www.google.com.vn/');
+        const newPageGroup = await newWindowTargetGroup.page()
+
+        const postUserTask = postToUser({page, profile_id, imageFiles, resJson})
+
+        const data = []
+
+        const postToAllPage = async () => {
+          for (let i = 0; i < resJson.page_ids.length; i++) {
+            let status
+            try {
+              await postToPage({page: newPage, page_id: resJson.page_ids[i], imageFiles, resJson})
+              status = 'success'
+            } catch (e) {
+              console.error(e.message)
+              status = 'fail'
+            } finally {
+              data.push({id, status, fb_id: resJson.page_ids[i]})
+            }
+          }
+        }
+
+        const postToAllGroup = async () => {
+          for (let i = 0; i < resJson.group_ids.length; i++) {
+            let status
+            try {
+              const post_id = await postToGroup({page: newPageGroup, group_id: resJson.group_ids[i], imageFiles, resJson})
+              status = 'success'
+              data.push({id, status, post_id})
+            } catch (e) {
+              console.error(e.message)
+              status = 'fail'
+            } finally {
+              data.push({id, status, fb_id: resJson.group_ids[i]})
+            }
+          }
+        }
+        const postPageTask = postToAllPage()
+        const postGroupTask = postToAllGroup()
+
+        let statusUser
+        try {
+          await postUserTask
+          statusUser = 'success'
+        } catch (e) {
+          console.error(e.message)
+          statusUser = 'fail'
+        } finally {
+          data.push({id, status: statusUser, fb_id: profile_id})
+        }
+
+        await postPageTask
+        await postGroupTask
+
+        await fetch('http://lamface.com/api/response-data.php', {
+          method: "POST", // *GET, POST, PUT, DELETE, etc.
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({key: 'OTJhMTJDMTRtcThTMTIwMkc1M3g', data})
+        })
+      } catch (e) {
+        console.error(e.message)
+        printLog(e.message)
+      } finally {
+        if (browser) await browser.close()
+        isRunning = false
+        updatePendingPost({resJson, type: 'remove', slotNumber})
+      }
+    }, Number(totalTime)*1000))
+  }
+
+  function waitForRunningDone() {
+    return new Promise(async resolve => {
+      while(true) {
+        await sleep(5000)
+        if(!isRunning) resolve()
+      }
+    })
+  }
+
+  function convertSecondsToCountdown(seconds){
+    //var days = Math.floor(parseInt(seconds) / (3600*24));
+    //seconds  -= days*3600*24;
+    var hrs   = Math.floor(seconds / 3600);
+    seconds  -= hrs*3600;
+    var mnts = Math.floor(seconds / 60);
+    seconds  -= mnts*60;
+    //days = days > 9? days : '0' + days
+    hrs = hrs > 9? hrs : '0' + hrs
+    mnts = mnts > 9? mnts : '0' + mnts
+    seconds = seconds > 9? seconds : '0' + seconds
+    return {hrs, mnts, seconds}
+  }
+
+  function clearPendingPost() {
+    for (var i = 0; i < intervalUpdateTime.length; i++) {
+      clearInterval(intervalUpdateTime[i]);
+    }
+    intervalUpdateTime = []
+    for (var i = 0; i < timeoutPendingPost.length; i++) {
+      clearTimeout(timeoutPendingPost[i]);
+    }
+    timeoutPendingPost = []
+    var myNode = document.getElementById('pending-post')
+    while (myNode.firstChild) {
+      myNode.removeChild(myNode.firstChild);
+    }
+  }
+  
+  function updatePendingPost({resJson, type, slotNumber}){
+    let arrPendingPost = store.get(`${slotNumber}.pendingpost`) || []
+    switch (type) {
+      case 'add':
+        arrPendingPost.push(resJson)
+        arrPendingPost = arrPendingPost.sort((a, b) => {
+          if(moment(a.date_publish) < moment(b.date_publish)) return 1
+          else if(moment(a.date_publish) > moment(b.date_publish)) return -1
+          return 0
+        })
+        clearPendingPost()
+        store.set(`${slotNumber}.pendingpost`, arrPendingPost)
+        for(let i = 0; i < arrPendingPost.length; i++){
+          appendPost({resJson: arrPendingPost[i], status: 'wait', slotNumber})
+        }
+        break;
+      case 'remove':
+        for(let i = arrPendingPost.length - 1; i >= 0; i--){
+          if(arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
+        }
+        clearPendingPost()
+        store.set(`${slotNumber}.pendingpost`, arrPendingPost)
+        for(let i = 0; i < arrPendingPost.length; i++){
+          appendPost({resJson: arrPendingPost[i], status: 'wait', slotNumber})
+        }
+        break;
+      default:
+        for(let i = 0; i < arrPendingPost.length; i++){
+          appendPost({resJson: arrPendingPost[i], status: 'wait', slotNumber})
+        }
+    }
+  }
+
+  async function schedulePost() {
+    clearLog()
+    printLog('Started!')
+    await sleep(1000)
+    printLog('Loading data...')
+    await sleep(5000)
+    try {
+      const res = await fetch('http://lamface.com/api/get-pending-data.php?key=OTJhMTJDMTRtcThTMTIwMkc1M3g&fbclid=IwAR1GQbGkX3BxpEFybxjtuHzD_YkTvLhfW4apfaDHijwLfWBfFiyfNI98TKU')
+      const resJson = await res.json()
+      printLog(`receive new data:`)
+      printLog(`profile_id: ${resJson.profile_id}`)
+      printLog(`content: ${resJson.content}`)
+      printLog(`picture:`)
+      resJson.images.forEach(image => {
+        printLog(`${image}`)
+      })
+      const id = resJson.id
+      const profile_id = resJson.profile_id
+      const slotNumber = store.get(profile_id)
+      if (!slotNumber) {
+        printLog(`Không tìm thấy account với profile_id: ${profile_id}`)
+        fs.appendFile('error.txt', `Data:\n${JSON.stringify(resJson)}\nKhông tìm thấy account với profile_id: ${profile_id}\n\n\n`, function (err) {
+          if (err) throw err;
+          console.log('Saved!');
+        });
+      }
+      updatePendingPost({resJson, type: 'add', slotNumber})
+    } catch (e) {
+      console.error(e.message)
+      printLog(e.message)
+    }
+  }
+
+  function start() {
+    schedulePost()
+    setInterval(schedulePost, 60000)
+  }
+
+  var ovrl = id("overlay"),
+    prog = id("progress"),
+    stat = id("progstat"),
+    c = 0,
+    tot = 100;
+
+  function id(v) {
+    return document.getElementById(v);
+  }
+
+  function doneLoading() {
+    ovrl.style.opacity = 0;
+    setTimeout(function () {
+      ovrl.style.display = "none";
+    }, 1200);
+  }
+
+  function progressLoaded() {
+    c += 1;
+    var perc = ((100 / tot * c) << 0) + "%";
+    prog.style.width = perc;
+    stat.innerHTML = "Loading " + perc;
+  }
+
+  async function loadbar() {
+    for (var i = 0; i < tot; i++) {
+      await sleep(7)
+      progressLoaded()
+    }
+  }
+
+  async function main() {
+    loadbar()
+    //store.set(`slot1.pendingpost`, null)
+    createFile(path.join(process.cwd(), 'chrome-path.txt'), 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe').then(() => {
+      browserPath = fs.readFileSync(path.join(process.cwd(), 'chrome-path.txt')).toString()
+    })
+    !fs.existsSync(path.join(process.cwd(), 'photo_upload')) && fs.mkdirSync(path.join(process.cwd(), 'photo_upload'));
+    !fs.existsSync(path.join(process.cwd(), 'facebook_account')) && fs.mkdirSync(path.join(process.cwd(), 'facebook_account'));
+    isLogin = await checkLogin()
+    doneLoading()
+    if (!isLogin) setLoginScreen()
+    else {
+      setMainScreen()
+      const {profile_id, name, img} = getDataInfo()
+      showDataInfo({profile_id, name, img})
+      updatePendingPost({slotNumber: 'slot1'})
+    }
+
+    /* document.getElementById("fb-name").innerHTML = 'Name: ' + store.get('slot1.name') || null
+     document.getElementById("fb-id").innerHTML = 'ID: ' + store.get('slot1.id') || null
+     document.getElementById("fb-pp").src = store.get('slot1.picture') || "assets/img/default-profile-pic.jpg"
+     txtlog_elm = document.getElementById("txtlog")
+     buttonDone1 = document.getElementById("fb-button-login-done-1")*/
+  }
+
+  document.addEventListener('DOMContentLoaded', main, false);
+</script>
+</body>
+</html>

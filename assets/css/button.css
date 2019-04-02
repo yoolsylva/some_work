@@ -1,0 +1,21 @@
+.btn {
+  border: 1px solid transparent;
+  background-color: white;
+  color: #FFA69A;
+  padding: 8px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 15px;
+}
+
+/* Green */
+.success {
+  border-color: #ffffff;
+  color: #FFA69A;
+}
+
+.success:hover {
+  background-color: #FFA69A;
+  color: white;
+  outline: none;
+}

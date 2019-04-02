@@ -1,0 +1,34 @@
+{
+  "name": "APF-Tool",
+  "version": "1.0.0",
+  "description": "Auto Post Facebook",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package-window": "electron-packager . auto-post-facebook --overwrite  --asar=true  --platform=win32 --arch=ia32 --no-prune --out=release-builds --electron-version=2.0.8",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "Electron",
+    "facebook",
+    "login",
+    "api",
+    "demo",
+    "example",
+    "facebook-authentication"
+  ],
+  "author": "Sylva",
+  "license": "MIT",
+  "devDependencies": {
+    "electron-packager": "^13.1.1"
+  },
+  "dependencies": {
+    "electron-reload": "^1.4.0",
+    "electron-store": "^2.0.0",
+    "moment": "^2.24.0",
+    "node-fetch": "^2.3.0",
+    "nodejs-base64": "^1.0.3",
+    "puppeteer-core": "^1.13.0",
+    "rimraf": "^2.6.3"
+  }
+}
