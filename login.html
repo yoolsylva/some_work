@@ -20,6 +20,7 @@
           crossorigin="anonymous"></script>
   <link href="assets/css/login.css" rel="stylesheet">
   <link href="assets/css/button.css" rel="stylesheet">
+  <link href="assets/css/loading.css" rel="stylesheet">
 </head>
 <body>
 <div id="overlay">
@@ -59,8 +60,8 @@
             <p id="fb-uid" style="-webkit-text-fill-color: aliceblue;">UID: 132432532543</p>
           </div>
           <div class="row">
-            <button class="btn success" id="btn-confirm" onclick="confirmDataInfo()">Xác nhận</button>
-            <button class="btn success" id="btn-start" style="margin-left: 10px" onclick="start()">Bắt đầu</button>
+            <a class="btn success" id="btn-confirm" onclick="start()">Bắt đầu</a>
+            <a class="btn success" id="btn-start" style="margin-left: 10px" onclick="logoutFB1()">Đăng xuất</a>
           </div>
         </div>
       </div>
@@ -112,63 +113,24 @@
         </li>
       </ul>
       <div class="tab-content">
+        <div class="loadbar-overlay" id="content-loadbar">
+          <div class="loading">
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+          </div>
+        </div>
         <div class="tab-pane fade show active" id="schedule-post" role="tabpanel" aria-labelledby="schedule-post-tab">
           <ul class="ul-post" id="pending-post">
-
           </ul>
         </div>
         <div class="tab-pane fade" id="history-post" role="tabpanel" aria-labelledby="history-post-tab">
-          <ul class="ul-post">
-            <li class="list-post">
-              <img class="post-thumpnail" src="https://asianfashion.com/wp-content/uploads/2017/03/l_p0047993305.jpg">
-              <h5>New fashion of the week</h5>
-              <img class="eye-icon" src="assets/img/eye-icon.png">
-              <p>Ngày tạo: 09/03/2019</p>
-              <p>Tổng content đăng: 26</p>
-              <p>Đếm ngược: 00:00:00</p>
-              <span>
-                <img src="assets/img/done.png">
-                <p>Hoàn tất</p>
-              </span>
-            </li>
-
-            <li class="list-post">
-              <img class="post-thumpnail" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToolyufgCwWMwS9p1AshYQc1O24Y4jE0B6F6CVjxTBdb0Arwq38g">
-              <h5>New Mobile Evolution</h5>
-              <img class="eye-icon" src="assets/img/eye-icon.png">
-              <p>Ngày tạo: 09/03/2019</p>
-              <p>Tổng content đăng: 26</p>
-              <p>Đếm ngược: 00:00:00</p>
-              <span>
-                <img src="assets/img/stop.png">
-                <p>Đã Hủy</p>
-              </span>
-            </li>
-            <li class="list-post">
-              <img class="post-thumpnail" src="https://e0.365dm.com/19/03/768x432/skysports-cristiano-ronaldo_4598963.jpg?20190306103516">
-              <h5>Ronaldo Hatrick</h5>
-              <img class="eye-icon" src="assets/img/eye-icon.png">
-              <p>Ngày tạo: 09/03/2019</p>
-              <p>Tổng content đăng: 26</p>
-              <p>Đếm ngược: 00:00:00</p>
-              <span>
-                <img src="assets/img/pause.png">
-                <p>Tạm dừng</p>
-              </span>
-            </li>
-
-            <li class="list-post">
-              <img class="post-thumpnail" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxAQDTNL0VtI84WsCu_3yDU83w-0_RSV2XhZeY_1QBZYtUwjo5JQ">
-              <h5>Hot asian girl</h5>
-              <img class="eye-icon" src="assets/img/eye-icon.png">
-              <p>Ngày tạo: 09/03/2019</p>
-              <p>Tổng content đăng: 26</p>
-              <p>Đếm ngược: 00:00:00</p>
-              <span>
-                <img src="assets/img/done.png">
-                <p>Hoàn tất</p>
-              </span>
-            </li>
+          <ul class="ul-post" id="history-scheduled">
           </ul>
         </div>
       </div>
@@ -199,6 +161,52 @@
   let timeoutPendingPost = []
   let intervalUpdateTime = []
 
+  var ovrl = id("overlay"),
+    prog = id("progress"),
+    stat = id("progstat"),
+    c = 0,
+    tot = 100;
+
+  function id(v) {
+    return document.getElementById(v);
+  }
+
+  async function doneLoading() {
+    ovrl.style.opacity = 0;
+    setTimeout(function () {
+      ovrl.style.display = "none";
+    }, 1200);
+  }
+
+  function progressLoaded() {
+    c += 1;
+    var perc = ((100 / tot * c) << 0) + "%";
+    prog.style.width = perc;
+    stat.innerHTML = "Loading " + perc;
+  }
+
+  async function loadbar(ms) {
+    c = 0
+    ovrl.style.opacity = 50
+    ovrl.style.display = "block"
+    for (var i = 0; i < tot; i++) {
+      await sleep(ms)
+      progressLoaded()
+    }
+  }
+
+  function showLoadingData() {
+    const loadbar_ovrl = document.getElementById('content-loadbar')
+    loadbar_ovrl.style.opacity = 20
+    loadbar_ovrl.style.display = "flex"
+  }
+
+  function hideLoadingData() {
+    const loadbar_ovrl = document.getElementById('content-loadbar')
+    loadbar_ovrl.style.opacity = 0
+    loadbar_ovrl.style.display = "none"
+  }
+
   function createFile(filename, data) {
     return new Promise((resolve, reject) => {
       fs.open(filename, 'r', function (err, fd) {
@@ -227,16 +235,27 @@
     return true
   }
 
+  function clearInterval() {
+    for (var i = 0; i < intervalUpdateTime.length; i++) {
+      clearInterval(intervalUpdateTime[i]);
+    }
+    intervalUpdateTime = []
+    for (var i = 0; i < timeoutPendingPost.length; i++) {
+      clearTimeout(timeoutPendingPost[i]);
+    }
+    timeoutPendingPost = []
+  }
+
   function closeApp() {
+    clearInterval()
     const remote = require('electron').remote;
     var window = remote.getCurrentWindow();
     window.close();
   }
 
   //  This is main download function which takes the url of your image
-  function download(uri) {
+  function download(uri, filename) {
     return new Promise((resolve, reject) => {
-      let filename = base64encode(uri);
       request.head(uri, function (err, res, body) {
         if (err) return reject()
         request(uri)
@@ -250,6 +269,15 @@
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function logoutFB1(){
+    loadbar(10)
+    clearInterval()
+    await clearDataInfo()
+    await sleep(2000)
+    doneLoading()
+    setLoginScreen()
   }
 
   async function loginFB1() {
@@ -268,6 +296,130 @@
     const pages = await browser1.pages();
     page1 = pages[0]
     await page1.setViewport({width: 1000, height: 800})
+    /*const cookie = [
+      {
+        "name": "dbln",
+        "value": "%7B%22100009096288948%22%3A%22cYFsUf6j%22%7D",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1586512161,
+        "size": 48,
+        "httpOnly": false,
+        "secure": false,
+        "session": false
+      },
+      {
+        "name": "xs",
+        "value": "6%3Ay8D7wKvWrAzFHQ%3A2%3A1554770951%3A11756%3A6156",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1586512161,
+        "size": 48,
+        "httpOnly": false,
+        "secure": false,
+        "session": false
+      },
+      {
+        "name": "act",
+        "value": "1554770952090%2F6",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1586512161,
+        "size": 48,
+        "httpOnly": false,
+        "secure": false,
+        "session": false
+      },
+      {
+        "name": "spin",
+        "value": "r.1000578944_b.trunk_t.1554770952_s.1_v.2_",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1586512161,
+        "size": 48,
+        "httpOnly": false,
+        "secure": false,
+        "session": false
+      },
+      {
+        "name": "presence",
+        "value": "EDvF3EtimeF1554770956EuserFA21B09096288948A2EstateFDutF1554770956352CEchFDp_5f1B09096288948F0CC",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1586512161,
+        "size": 48,
+        "httpOnly": false,
+        "secure": false,
+        "session": false
+      },
+      {
+        "name": "sb",
+        "value": "uOurXNT_FCc8ACeF6Cu7sPS4",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1617961756.328453,
+        "size": 26,
+        "httpOnly": true,
+        "secure": true,
+        "session": false
+      },
+      {
+        "name": "",
+        "value": "",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1586512329,
+        "size": 0,
+        "httpOnly": false,
+        "secure": false,
+        "session": false
+      },
+      {
+        "name": "datr",
+        "value": "G7ytXJHjYAIqdd4uMhT8EwvJ",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1617961760.12297,
+        "size": 28,
+        "httpOnly": true,
+        "secure": true,
+        "session": false
+      },
+      {
+        "name": "wd",
+        "value": "800x600",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1555496166,
+        "size": 9,
+        "httpOnly": false,
+        "secure": true,
+        "session": false
+      },
+      {
+        "name": "fr",
+        "value": "11EEp0EuKyXdf1YPm.AWUh0La7PM1VdzZjscD2h6cXXRU.Bcq-u4.Pv.Fyr.0.0.Bcq-wM.AWXulWFM",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1562667365.923576,
+        "size": 81,
+        "httpOnly": true,
+        "secure": true,
+        "session": false
+      },
+      {
+        "name": "c_user",
+        "value": "100009096288948",
+        "domain": ".facebook.com",
+        "path": "/",
+        "expires": 1562667365.923576,
+        "size": 81,
+        "httpOnly": true,
+        "secure": true,
+        "session": false
+      }
+    ]
+    await page1.setCookie(...cookie)*/
     await page1.goto('https://facebook.com', {waitUntil: 'domcontentloaded'});
     while (true) {
       await sleep(500)
@@ -291,8 +443,31 @@
         const {profile_id, name, img} = result
         console.log(result)
 
+        loadbar(100)
+        const browser = await puppeteer.launch({
+          headless: true,
+          slowMo: 50,
+          userDataDir: userDataDir,
+          executablePath: browserPath,
+          args: [
+            `--window-size=1000,800`
+          ],
+        });
+        const pages = await browser.pages();
+        const page_tmp = pages[0]
+        await page_tmp.setViewport({width: 1000, height: 800})
+        await page_tmp.setCookie(...cookie)
+        await page_tmp.goto(`https://facebook.com/${profile_id}`, {waitUntil: 'domcontentloaded'});
+        await page_tmp.waitForSelector('.photoContainer')
+        const img_bigger = await page_tmp.evaluate(() => {
+          return document.querySelector('.photoContainer img').getAttribute('src')
+        })
+        await browser.close()
+        console.log(img_bigger)
+        doneLoading()
         setMainScreen()
-        showDataInfo({profile_id, name, img})
+        saveDataInfo({profile_id, name, img: img_bigger? img_bigger : img})
+        showDataInfo({profile_id, name, img: img_bigger? img_bigger : img})
         break
       } catch (e) {
         console.error(e.message)
@@ -315,6 +490,8 @@
       store.delete(`slot1.id`)
       store.delete(`slot1.name`)
       store.delete(`slot1.picture`)
+      store.delete(`slot1.history`)
+      store.delete(`slot1.pendingpost`)
       const userDataDir = path.join(process.cwd(), `/facebook_account/slot1`)
       rimraf(userDataDir, function () {
         resolve()
@@ -362,7 +539,7 @@
     await page.waitForXPath('//div[@class="_1mf _1mj"] | //div[@data-testid="status-attachment-mentions-input"]')
     const status = await page.$x('//div[@class="_1mf _1mj"] | //div[@data-testid="status-attachment-mentions-input"]');
     await status[0].click()
-    await page.keyboard.type(resJson.content, {delay: 10});
+    await page.keyboard.type(resJson.content, {delay: 0});
     const input = await page.$('input[type=file]')
     imageFiles.length && await input.uploadFile(...imageFiles)
     await sleep(1000)
@@ -412,7 +589,7 @@
       await sleep(50)
     }
     await page.click('button[data-testid=react-composer-post-button]')
-    await sleep(4000)
+    await sleep(8000)
     /*let i = 1000
     while(i--){
       await sleep(50)
@@ -433,9 +610,16 @@
     const url = `https://facebook.com/${group_id}?hl=en`
     await page.setViewport({width: 800, height: 800})
     await page.goto(url, {waitUntil: 'domcontentloaded'});
-    await page.waitForSelector('[data-testid=status-attachment-mentions-input]')
-    await page.click('[data-testid=status-attachment-mentions-input]')
-    await page.keyboard.type(resJson.content, {delay: 10});
+    await page.waitForXPath('//*[@data-testid="status-attachment-mentions-input"] | //*[@data-testid="react-composer-root"]//*[@data-testid="status-attachment-selector"]')
+    const inputText = await page.$x('//*[@data-testid="status-attachment-mentions-input"]//div | //*[@data-testid="react-composer-root"]//*[@data-testid="status-attachment-selector"]')
+    if(!inputText.length) throw new Error('Not found input text in group!')
+    await inputText[0].click()
+    await sleep(1000)
+    try{
+      await page.type('[data-testId="status-attachment-mentions-input"]', resJson.content)
+    } catch (e) {
+      await page.keyboard.type(resJson.content, {delay: 10});
+    }
     const input = await page.$('input[data-testid=media-sprout]')
     imageFiles.length && await input.uploadFile(...imageFiles)
     await sleep(500)
@@ -448,7 +632,7 @@
       await sleep(50)
     }
     await page.click('button[data-testid=react-composer-post-button]')
-    await sleep(4000)
+    await sleep(8000)
     /*let i = 1000
     while(i--){
       await sleep(50)
@@ -462,7 +646,10 @@
   }
 
   function printLog(text) {
-    console.log(text)
+    fs.appendFile('error.txt', `${text}\n`, function (err) {
+      if (err) throw err;
+      console.log('Saved!');
+    });
   }
 
   function clearLog() {
@@ -473,7 +660,10 @@
   }
 
   function appendPost({resJson, status, slotNumber}) {
+    const isExist = document.getElementById(`${resJson.id}`)
+    if(isExist) return
     const item = document.createElement('li')
+    item.setAttribute('id', `${resJson.id}`)
     item.setAttribute('class', 'list-post')
     const img = document.createElement('img')
     img.setAttribute('class', 'post-thumpnail')
@@ -486,7 +676,7 @@
 
     const now = moment(new Date()); //todays date
     const end = moment(resJson.date_publish); // another date
-    const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : 0;
+    const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : moment.duration(0);
     let totalTime = parseInt(duration.asSeconds())
     //let totalTime = getRandomBetween(20, 30)
     const {mnts, hrs, seconds} = convertSecondsToCountdown(totalTime)
@@ -534,8 +724,8 @@
       try {
         isRunning = true
         const profile_id = resJson.profile_id
-        const imageFiles = await Promise.all(resJson.images.map(image => {
-          return download(image)
+        const imageFiles = await Promise.all(resJson.images.map((image, index) => {
+          return download(image, `${index}.png`)
         }))
         const userDataDir = path.join(process.cwd(), `/facebook_account/${slotNumber}/`)
         browser = await puppeteer.launch({
@@ -550,50 +740,184 @@
         });
         const pages = await browser.pages();
         const page = pages[0]
-        await page.evaluate(() => window.open('https://www.google.com', 'page', 'height=800,width=800,top=0,left=700'));
-        const newWindowTargetPage = await browser.waitForTarget(target => target.url() === 'https://www.google.com/');
-        const newPage = await newWindowTargetPage.page()
-
-        await page.evaluate(() => window.open('https://www.google.com.vn/', 'group', 'height=800,width=800,top=0,left=1100'));
-        const newWindowTargetGroup = await browser.waitForTarget(target => target.url() === 'https://www.google.com.vn/');
-        const newPageGroup = await newWindowTargetGroup.page()
-
-        const postUserTask = postToUser({page, profile_id, imageFiles, resJson})
+        /*const cookie = [
+          {
+            "name": "dbln",
+            "value": "%7B%22100009096288948%22%3A%22cYFsUf6j%22%7D",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1586512161,
+            "size": 48,
+            "httpOnly": false,
+            "secure": false,
+            "session": false
+          },
+          {
+            "name": "xs",
+            "value": "6%3Ay8D7wKvWrAzFHQ%3A2%3A1554770951%3A11756%3A6156",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1586512161,
+            "size": 48,
+            "httpOnly": false,
+            "secure": false,
+            "session": false
+          },
+          {
+            "name": "act",
+            "value": "1554770952090%2F6",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1586512161,
+            "size": 48,
+            "httpOnly": false,
+            "secure": false,
+            "session": false
+          },
+          {
+            "name": "spin",
+            "value": "r.1000578944_b.trunk_t.1554770952_s.1_v.2_",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1586512161,
+            "size": 48,
+            "httpOnly": false,
+            "secure": false,
+            "session": false
+          },
+          {
+            "name": "presence",
+            "value": "EDvF3EtimeF1554770956EuserFA21B09096288948A2EstateFDutF1554770956352CEchFDp_5f1B09096288948F0CC",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1586512161,
+            "size": 48,
+            "httpOnly": false,
+            "secure": false,
+            "session": false
+          },
+          {
+            "name": "sb",
+            "value": "uOurXNT_FCc8ACeF6Cu7sPS4",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1617961756.328453,
+            "size": 26,
+            "httpOnly": true,
+            "secure": true,
+            "session": false
+          },
+          {
+            "name": "",
+            "value": "",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1586512329,
+            "size": 0,
+            "httpOnly": false,
+            "secure": false,
+            "session": false
+          },
+          {
+            "name": "datr",
+            "value": "G7ytXJHjYAIqdd4uMhT8EwvJ",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1617961760.12297,
+            "size": 28,
+            "httpOnly": true,
+            "secure": true,
+            "session": false
+          },
+          {
+            "name": "wd",
+            "value": "800x600",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1555496166,
+            "size": 9,
+            "httpOnly": false,
+            "secure": true,
+            "session": false
+          },
+          {
+            "name": "fr",
+            "value": "11EEp0EuKyXdf1YPm.AWUh0La7PM1VdzZjscD2h6cXXRU.Bcq-u4.Pv.Fyr.0.0.Bcq-wM.AWXulWFM",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1562667365.923576,
+            "size": 81,
+            "httpOnly": true,
+            "secure": true,
+            "session": false
+          },
+          {
+            "name": "c_user",
+            "value": "100009096288948",
+            "domain": ".facebook.com",
+            "path": "/",
+            "expires": 1562667365.923576,
+            "size": 81,
+            "httpOnly": true,
+            "secure": true,
+            "session": false
+          }
+        ]
+        await page.setCookie(...cookie)*/
 
         const data = []
+        let postPageTask, postGroupTask
 
-        const postToAllPage = async () => {
-          for (let i = 0; i < resJson.page_ids.length; i++) {
-            let status
-            try {
-              await postToPage({page: newPage, page_id: resJson.page_ids[i], imageFiles, resJson})
-              status = 'success'
-            } catch (e) {
-              console.error(e.message)
-              status = 'fail'
-            } finally {
-              data.push({id, status, fb_id: resJson.page_ids[i]})
+        if(resJson.fanpage_ids.length) {
+          await page.evaluate(() => window.open('https://www.google.com', 'page', 'height=800,width=800,top=0,left=700'));
+          const newWindowTargetPage = await browser.waitForTarget(target => target.url() === 'https://www.google.com/');
+          const newPage = await newWindowTargetPage.page()
+
+          const postToAllPage = async () => {
+            for (let i = 0; i < resJson.fanpage_ids.length; i++) {
+              let status
+              try {
+                await postToPage({page: newPage, page_id: resJson.fanpage_ids[i], imageFiles, resJson})
+                status = 'success'
+              } catch (e) {
+                console.error(e.message)
+                status = 'fail'
+              } finally {
+                data.push({id, status, fb_id: resJson.fanpage_ids[i]})
+              }
             }
           }
+          postPageTask = postToAllPage()
         }
 
-        const postToAllGroup = async () => {
-          for (let i = 0; i < resJson.group_ids.length; i++) {
-            let status
-            try {
-              const post_id = await postToGroup({page: newPageGroup, group_id: resJson.group_ids[i], imageFiles, resJson})
-              status = 'success'
-              data.push({id, status, post_id})
-            } catch (e) {
-              console.error(e.message)
-              status = 'fail'
-            } finally {
-              data.push({id, status, fb_id: resJson.group_ids[i]})
+        if(resJson.group_ids.length) {
+          await page.evaluate(() => window.open('https://www.google.com.vn/', 'group', 'height=800,width=800,top=0,left=1100'));
+          const newWindowTargetGroup = await browser.waitForTarget(target => target.url() === 'https://www.google.com.vn/');
+          const newPageGroup = await newWindowTargetGroup.page()
+
+          const postToAllGroup = async () => {
+            for (let i = 0; i < resJson.group_ids.length; i++) {
+              let status
+              try {
+                const post_id = await postToGroup({
+                  page: newPageGroup,
+                  group_id: resJson.group_ids[i],
+                  imageFiles,
+                  resJson
+                })
+                status = 'success'
+                data.push({id, status, post_id})
+              } catch (e) {
+                console.error(e.message)
+                status = 'fail'
+              } finally {
+                data.push({id, status, fb_id: resJson.group_ids[i]})
+              }
             }
           }
+          postGroupTask = postToAllGroup()
         }
-        const postPageTask = postToAllPage()
-        const postGroupTask = postToAllGroup()
+        const postUserTask = postToUser({page, profile_id, imageFiles, resJson})
 
         let statusUser
         try {
@@ -606,10 +930,10 @@
           data.push({id, status: statusUser, fb_id: profile_id})
         }
 
-        await postPageTask
-        await postGroupTask
+        if(resJson.fanpage_ids.length) await postPageTask
+        if(resJson.group_ids.length) await postGroupTask
 
-        await fetch('http://lamface.com/api/response-data.php', {
+        await fetch('http://kingcontent.pro/api/response-data.php', {
           method: "POST", // *GET, POST, PUT, DELETE, etc.
           headers: {
             "Content-Type": "application/json"
@@ -685,11 +1009,9 @@
         for(let i = arrPendingPost.length - 1; i >= 0; i--){
           if(arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
         }
-        clearPendingPost()
         store.set(`${slotNumber}.pendingpost`, arrPendingPost)
-        for(let i = 0; i < arrPendingPost.length; i++){
-          appendPost({resJson: arrPendingPost[i], status: 'wait', slotNumber})
-        }
+        const elementPost = document.getElementById(`${resJson.id}`)
+        if(elementPost) elementPost.parentNode.removeChild(elementPost)
         break;
       default:
         for(let i = 0; i < arrPendingPost.length; i++){
@@ -699,76 +1021,142 @@
   }
 
   async function schedulePost() {
+    showLoadingData()
+    await sleep(3000)
     clearLog()
     printLog('Started!')
-    await sleep(1000)
+    const profile_id = store.get('slot1.id')
+    if(!profile_id) {
+      printLog('Information not saved')
+      return
+    }
     printLog('Loading data...')
-    await sleep(5000)
     try {
-      const res = await fetch('http://lamface.com/api/get-pending-data.php?key=OTJhMTJDMTRtcThTMTIwMkc1M3g&fbclid=IwAR1GQbGkX3BxpEFybxjtuHzD_YkTvLhfW4apfaDHijwLfWBfFiyfNI98TKU')
+      const res = await fetch(`http://kingcontent.pro/api/get-pending-data.php?key=OTJhMTJDMTRtcThTMTIwMkc1M3g&fb_id=${profile_id}`)
       const resJson = await res.json()
+      if(resJson.error) throw new Error(resJson.message)
       printLog(`receive new data:`)
-      printLog(`profile_id: ${resJson.profile_id}`)
-      printLog(`content: ${resJson.content}`)
-      printLog(`picture:`)
-      resJson.images.forEach(image => {
-        printLog(`${image}`)
+      printLog(resJson.data)
+      resJson.data.forEach(data => {
+        const id = data.id
+        const slotNumber = store.get(data.profile_id)
+        if (!slotNumber) {
+          printLog(`Không tìm thấy account với profile_id: ${data.profile_id}`)
+          fs.appendFile('error.txt', `Data:\n${JSON.stringify(resJson)}\nKhông tìm thấy account với profile_id: ${data.profile_id}\n\n\n`, function (err) {
+            if (err) throw err;
+            console.log('Saved!');
+          });
+        }
+        updatePendingPost({resJson: data, type: 'add', slotNumber})
       })
-      const id = resJson.id
-      const profile_id = resJson.profile_id
-      const slotNumber = store.get(profile_id)
+    } catch (e) {
+      console.error(e.message)
+      printLog(e.message)
+    }
+    hideLoadingData()
+  }
+
+  async function scheduleHistory() {
+    const profile_id = store.get('slot1.id')
+    try {
+      const res = await fetch(`http://kingcontent.pro/api/get-schedules.php?key=OTJhMTJDMTRtcThTMTIwMkc1M3g&fb_id=${profile_id}`)
+      const resJson = await res.json()
+      if(resJson.error) throw new Error(resJson.message)
+      if(!resJson.data.length) return
+      const slotNumber = store.get(resJson.data[0].contents.profile_id)
       if (!slotNumber) {
-        printLog(`Không tìm thấy account với profile_id: ${profile_id}`)
-        fs.appendFile('error.txt', `Data:\n${JSON.stringify(resJson)}\nKhông tìm thấy account với profile_id: ${profile_id}\n\n\n`, function (err) {
+        printLog(`Không tìm thấy account với profile_id: ${data.profile_id}`)
+        fs.appendFile('error.txt', `Data:\n${JSON.stringify(resJson)}\nKhông tìm thấy account với profile_id: ${resJson.data.profile_id}\n\n\n`, function (err) {
           if (err) throw err;
           console.log('Saved!');
         });
       }
-      updatePendingPost({resJson, type: 'add', slotNumber})
-    } catch (e) {
+      updateHistory({data: resJson.data, type: 'replace', slotNumber})
+    }catch (e) {
       console.error(e.message)
       printLog(e.message)
     }
   }
 
-  function start() {
-    schedulePost()
-    setInterval(schedulePost, 60000)
-  }
-
-  var ovrl = id("overlay"),
-    prog = id("progress"),
-    stat = id("progstat"),
-    c = 0,
-    tot = 100;
-
-  function id(v) {
-    return document.getElementById(v);
-  }
-
-  function doneLoading() {
-    ovrl.style.opacity = 0;
-    setTimeout(function () {
-      ovrl.style.display = "none";
-    }, 1200);
-  }
-
-  function progressLoaded() {
-    c += 1;
-    var perc = ((100 / tot * c) << 0) + "%";
-    prog.style.width = perc;
-    stat.innerHTML = "Loading " + perc;
-  }
-
-  async function loadbar() {
-    for (var i = 0; i < tot; i++) {
-      await sleep(7)
-      progressLoaded()
+  function clearHistory() {
+    var myNode = document.getElementById('history-scheduled')
+    while (myNode.firstChild) {
+      myNode.removeChild(myNode.firstChild);
     }
   }
 
+  function appendHistory({data}) {
+    console.log(data)
+    const item = document.createElement('li')
+    item.setAttribute('class', 'list-post')
+    const img = document.createElement('img')
+    img.setAttribute('class', 'post-thumpnail')
+    img.setAttribute('src', data.contents.images.length ? data.contents.images[0] : data.thumbnail)
+    const h5 = document.createElement('h5')
+    h5.innerText = data.name
+    const imgEye = document.createElement('img')
+    imgEye.setAttribute('class', 'eye-icon')
+    imgEye.setAttribute('src', 'assets/img/eye-icon.png')
+
+    const p1 = document.createElement('p')
+    p1.innerText = 'Ngày tạo: ' + moment(data.created).format('DD/MM/YYYY')
+    const p2 = document.createElement('p')
+    p2.innerText = 'Tổng content đăng: ' + data.contents.images.length
+    const spanStatus = document.createElement('span')
+    const imgStatus = document.createElement('img')
+    imgStatus.setAttribute('src', status ? `assets/img/done.png` : `assets/img/stop.png`)
+    const pStatus = document.createElement('p')
+    pStatus.innerText = status ? 'Hoàn tất' : 'Gặp Lỗi'
+    spanStatus.appendChild(imgStatus)
+    spanStatus.appendChild(pStatus)
+
+    item.appendChild(img)
+    item.appendChild(h5)
+    item.appendChild(p1)
+    item.appendChild(imgEye)
+    item.appendChild(p2)
+    const countdount = document.createElement('p')
+    countdount.innerText = 'Ngày đăng: ' + data.contents.date_publish
+    item.appendChild(countdount)
+    item.appendChild(spanStatus)
+
+    document.getElementById('history-scheduled').appendChild(item)
+  }
+
+  function updateHistory({data, type, slotNumber}) {
+    let arrHistory = store.get(`${slotNumber}.history`) || []
+    switch (type) {
+      case 'add':
+        arrHistory.unshift(data)
+        clearHistory()
+        store.set(`${slotNumber}.history`, arrHistory)
+        for(let i = 0; i < arrHistory.length; i++){
+          appendHistory({data: arrHistory[i]})
+        }
+        break;
+      case 'replace':
+        clearHistory()
+        store.set(`${slotNumber}.history`, data)
+        for(let i = 0; i < data.length; i++){
+          appendHistory({data: data[i]})
+        }
+        break;
+      default:
+        for(let i = 0; i < arrHistory.length; i++){
+          appendHistory({data: arrHistory[i]})
+        }
+    }
+  }
+
+  function start() {
+    schedulePost()
+    setInterval(schedulePost, 60000*10)
+    scheduleHistory()
+    setInterval(scheduleHistory, 60000*60*2)
+  }
+
   async function main() {
-    loadbar()
+    loadbar(7)
     //store.set(`slot1.pendingpost`, null)
     createFile(path.join(process.cwd(), 'chrome-path.txt'), 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe').then(() => {
       browserPath = fs.readFileSync(path.join(process.cwd(), 'chrome-path.txt')).toString()
@@ -783,6 +1171,7 @@
       const {profile_id, name, img} = getDataInfo()
       showDataInfo({profile_id, name, img})
       updatePendingPost({slotNumber: 'slot1'})
+      updateHistory({slotNumber: 'slot1'})
     }
 
     /* document.getElementById("fb-name").innerHTML = 'Name: ' + store.get('slot1.name') || null

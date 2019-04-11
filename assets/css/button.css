@@ -1,21 +1,22 @@
 .btn {
   border: 1px solid transparent;
   background-color: white;
-  color: #FFA69A;
   padding: 8px 20px;
   font-size: 15px;
   cursor: pointer;
-  border-radius: 15px;
+  border-radius: 13px;
+  text-decoration: none;
+  min-width: 100px;
 }
 
 /* Green */
 .success {
   border-color: #ffffff;
-  color: #FFA69A;
 }
 
 .success:hover {
   background-color: #FFA69A;
   color: white;
+  -webkit-text-fill-color: white;
   outline: none;
 }

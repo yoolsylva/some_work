@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "package-window": "electron-packager . auto-post-facebook --overwrite  --asar=true  --platform=win32 --arch=ia32 --no-prune --out=release-builds --electron-version=2.0.8",
+    "package-window": "electron-packager . auto-post-facebook --overwrite  --asar  --platform=win32 --arch=ia32 --no-prune --out=release-builds --electron-version=4.1.4 app-version=1.0",
     "dist": "electron-builder"
   },
   "keywords": [
@@ -23,7 +23,7 @@
     "electron-packager": "^13.1.1"
   },
   "dependencies": {
-    "electron-reload": "^1.4.0",
+    "electron": "^4.1.4",
     "electron-store": "^2.0.0",
     "moment": "^2.24.0",
     "node-fetch": "^2.3.0",
