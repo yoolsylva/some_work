@@ -4,9 +4,15 @@
   "description": "Auto Post Facebook",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "package-window": "electron-packager . auto-post-facebook --overwrite  --asar  --platform=win32 --arch=ia32 --no-prune --out=release-builds --electron-version=4.1.4 app-version=1.0",
-    "dist": "electron-builder"
+    "start": "set mode=development&&electron .",
+    "package-window": "electron-packager . auto-post-facebook --overwrite  --asar --platform=win32 --arch=ia32 --out=release-builds --electron-version=2.0.8 app-version=1.0",
+    "dist": "electron-builder build --win --x64"
+  },
+  "build": {
+    "appId": "autopostkingcontent.pro",
+    "mac": {
+      "category": "autopostfacebook.app.facebook.automation"
+    }
   },
   "keywords": [
     "Electron",
@@ -20,15 +26,16 @@
   "author": "Sylva",
   "license": "MIT",
   "devDependencies": {
+    "electron": "^2.0.8",
+    "electron-builder": "^20.39.0",
     "electron-packager": "^13.1.1"
   },
   "dependencies": {
-    "electron": "^4.1.4",
     "electron-store": "^2.0.0",
     "moment": "^2.24.0",
     "node-fetch": "^2.3.0",
-    "nodejs-base64": "^1.0.3",
     "puppeteer-core": "^1.13.0",
+    "request": "^2.88.0",
     "rimraf": "^2.6.3"
   }
 }
