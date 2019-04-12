@@ -41,10 +41,10 @@ function createWindow() {
 app.on('ready', function () {
   autoUpdater.setFeedURL({
     provider: 'github',
-    repo: process.env.REPO,
-    owner: process.env.OWNER,
+    repo: 'auto_post_facebook',
+    owner: 'yoolsylva',
     private: true,
-    token: process.env.GH_TOKEN
+    token: '72cf10d796bc6cf495cf707c33c7a278db721058'
   })
   autoUpdater.checkForUpdates()
   createWindow()
