@@ -1,6 +1,6 @@
 {
   "name": "APF-Tool",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Auto Post Facebook",
   "main": "main.js",
   "scripts": {
@@ -39,13 +39,13 @@
   "author": "Sylva",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^3.1.8",
-    "electron-builder": "^20.39.0",
+    "electron": "^4.0.6",
+    "electron-builder": "^20.34.0",
     "electron-packager": "^13.1.1"
   },
   "dependencies": {
     "electron-store": "^2.0.0",
-    "electron-updater": "^4.0.6",
+    "electron-updater": "^3.2.3",
     "moment": "^2.24.0",
     "node-fetch": "^2.3.0",
     "puppeteer-core": "^1.13.0",
