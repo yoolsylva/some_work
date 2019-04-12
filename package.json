@@ -1,6 +1,6 @@
 {
   "name": "APF-Tool",
-  "version": "1.0.9",
+  "version": "2.0.0",
   "description": "Auto Post Facebook",
   "main": "main.js",
   "scripts": {
@@ -14,13 +14,17 @@
       "category": "autopostfacebook.app.facebook.automation"
     },
     "win": {
-      "publish": ["github"]
+      "publish": [
+        "github"
+      ]
     },
-    "publish": [{
-      "provider": "github",
-      "owner": "yoolsylva",
-      "repo": "auto_post_facebook"
-    }]
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "yoolsylva",
+        "repo": "auto_post_facebook"
+      }
+    ]
   },
   "keywords": [
     "Electron",
@@ -34,7 +38,7 @@
   "author": "Sylva",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^2.0.8",
+    "electron": "^3.1.8",
     "electron-builder": "^20.39.0",
     "electron-packager": "^13.1.1"
   },
