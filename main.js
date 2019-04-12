@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const url = require('url');
 const {autoUpdater} = require("electron-updater");
@@ -38,7 +38,10 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', function () {
+  autoUpdater.checkForUpdatesAndNotify();
+  createWindow()
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -62,31 +65,42 @@ ipcMain.on('message', (event, message) => {
   console.log(message) // prints "ping"
 })
 
-const isProduction = process.env.mode !== 'development'
-console.log(isProduction)
-if(isProduction){
-  autoUpdater.on('checking-for-update', () => {
-    console.log('Checking for update...');
+setInterval(() => {
+  autoUpdater.checkForUpdatesAndNotify()
+}, 60000*5)
+
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+})
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available.');
+})
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available.');
+})
+autoUpdater.on('error', (err) => {
+  console.log('Error in auto-updater. ' + err);
+})
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  console.log(log_message);
+})
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded');
+  const dialogOpts = {
+    type: 'info',
+    buttons: ['Restart', 'Later'],
+    title: 'Application Update',
+    message: JSON.stringify(info),
+    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+  }
+
+  dialog.showMessageBox(dialogOpts, (response) => {
+    if (response === 0) autoUpdater.quitAndInstall()
   })
-  autoUpdater.on('update-available', (info) => {
-    console.log('Update available.');
-  })
-  autoUpdater.on('update-not-available', (info) => {
-    console.log('Update not available.');
-  })
-  autoUpdater.on('error', (err) => {
-    console.log('Error in auto-updater. ' + err);
-  })
-  autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    console.log(log_message);
-  })
-  autoUpdater.on('update-downloaded', (info) => {
-    console.log('Update downloaded');
-  });
-}
+});
 
 /*if(isProduction) {
   const server = 'https://hazel.vietbachit.now.sh/'
@@ -117,8 +131,6 @@ if(isProduction){
     console.error(message)
   })
 }*/
-
-
 
 
 // In this file you can include the rest of your app's specific main process

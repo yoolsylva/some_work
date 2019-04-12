@@ -1,6 +1,6 @@
 {
   "name": "APF-Tool",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Auto Post Facebook",
   "main": "main.js",
   "scripts": {

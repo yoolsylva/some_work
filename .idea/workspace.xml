@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="84f63d74-019f-44eb-8c8e-8ae815f87f5d" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -83,18 +84,18 @@
         <counts>
           <entry key="css" value="1866" />
           <entry key="gitignore" value="92" />
-          <entry key="html" value="9160" />
-          <entry key="js" value="884" />
-          <entry key="json" value="314" />
+          <entry key="html" value="9203" />
+          <entry key="js" value="914" />
+          <entry key="json" value="317" />
           <entry key="txt" value="55" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CSS" value="1866" />
-          <entry key="HTML" value="9160" />
-          <entry key="JSON" value="314" />
-          <entry key="JavaScript" value="884" />
+          <entry key="HTML" value="9203" />
+          <entry key="JSON" value="317" />
+          <entry key="JavaScript" value="914" />
           <entry key="PLAIN_TEXT" value="147" />
         </counts>
       </usages-collector>
@@ -127,8 +128,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/login.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5049">
-              <caret line="494" column="11" selection-start-line="494" selection-start-column="11" selection-end-line="494" selection-end-column="11" />
+            <state relative-caret-position="376">
+              <caret line="501" column="47" selection-start-line="501" selection-start-column="47" selection-end-line="501" selection-end-column="47" />
               <folding>
                 <element signature="n#div#0;n#body#0;n#html#0;n#!!top" />
                 <element signature="n#style#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -182,11 +183,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="68" column="40" selection-start-line="68" selection-start-column="40" selection-end-line="68" selection-end-column="40" />
+            <state relative-caret-position="289">
+              <caret line="101" column="4" lean-forward="true" selection-start-line="101" selection-start-column="4" selection-end-line="101" selection-end-column="4" />
               <folding>
                 <element signature="e#2963#6260#0" />
                 <element signature="e#6262#6858#0" />
@@ -197,7 +198,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="34">
@@ -210,7 +211,7 @@
         <entry file="file://$PROJECT_DIR$/test.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state>
-              <caret column="70" selection-end-column="70" />
+              <caret column="56" selection-start-column="56" selection-end-column="56" />
             </state>
           </provider>
         </entry>
@@ -242,7 +243,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>slotNumber</find>
       <find>profi</find>
       <find>loginFB1</find>
       <find>setMainScreen</find>
@@ -272,6 +272,7 @@
       <find>logout</find>
       <find>clearAllInterval</find>
       <find>url</find>
+      <find>alert</find>
     </findStrings>
     <replaceStrings>
       <replace>pending-post</replace>
@@ -305,10 +306,10 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/test2.js" />
         <option value="$PROJECT_DIR$/assets/css/modal.css" />
-        <option value="$PROJECT_DIR$/login.html" />
-        <option value="$PROJECT_DIR$/main.js" />
-        <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/test.txt" />
+        <option value="$PROJECT_DIR$/login.html" />
+        <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/main.js" />
       </list>
     </option>
   </component>
@@ -347,11 +348,6 @@
             <path>
               <item name="auto-post-facebook" type="b2602c69:ProjectViewProjectNode" />
               <item name="apf-tool" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="auto-post-facebook" type="b2602c69:ProjectViewProjectNode" />
-              <item name="apf-tool" type="462c0819:PsiDirectoryNode" />
-              <item name="dist" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -416,12 +412,12 @@
       <workItem from="1554965872543" duration="2936000" />
       <workItem from="1554970283404" duration="3838000" />
       <workItem from="1554976829827" duration="15436000" />
-      <workItem from="1555039690257" duration="5175000" />
+      <workItem from="1555039690257" duration="6566000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="234031000" />
+    <option name="totallyTimeSpent" value="235422000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -429,10 +425,10 @@
     <layout>
       <window_info id="npm" order="0" side_tool="true" />
       <window_info id="Favorites" order="1" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="2" visible="true" weight="0.24973656" />
+      <window_info active="true" content_ui="combo" id="Project" order="2" visible="true" weight="0.24973656" />
       <window_info id="Structure" order="3" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Docker" order="0" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="1" visible="true" weight="0.32827735" />
+      <window_info anchor="bottom" id="Terminal" order="1" visible="true" weight="0.32827735" />
       <window_info anchor="bottom" id="Event Log" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="3" />
       <window_info anchor="bottom" id="Message" order="4" />
@@ -622,8 +618,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/login.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5049">
-          <caret line="494" column="11" selection-start-line="494" selection-start-column="11" selection-end-line="494" selection-end-column="11" />
+        <state relative-caret-position="376">
+          <caret line="501" column="47" selection-start-line="501" selection-start-column="47" selection-end-line="501" selection-end-column="47" />
           <folding>
             <element signature="n#div#0;n#body#0;n#html#0;n#!!top" />
             <element signature="n#style#0;n#div#2;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -643,20 +639,7 @@
     <entry file="file://$PROJECT_DIR$/test.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state>
-          <caret column="70" selection-end-column="70" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="68" column="40" selection-start-line="68" selection-start-column="40" selection-end-line="68" selection-end-column="40" />
-          <folding>
-            <element signature="e#2963#6260#0" />
-            <element signature="e#6262#6858#0" />
-            <element signature="e#6860#8835#0" />
-            <element signature="e#8837#9510#0" />
-          </folding>
+          <caret column="56" selection-start-column="56" selection-end-column="56" />
         </state>
       </provider>
     </entry>
@@ -664,6 +647,19 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
           <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="101" column="4" lean-forward="true" selection-start-line="101" selection-start-column="4" selection-end-line="101" selection-end-column="4" />
+          <folding>
+            <element signature="e#2963#6260#0" />
+            <element signature="e#6262#6858#0" />
+            <element signature="e#6860#8835#0" />
+            <element signature="e#8837#9510#0" />
+          </folding>
         </state>
       </provider>
     </entry>
