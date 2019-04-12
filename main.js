@@ -39,6 +39,13 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function () {
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    repo: 'auto_post_facebook',
+    owner: 'yoolsylva',
+    private: true,
+    token: '72cf10d796bc6cf495cf707c33c7a278db721058'
+  })
   autoUpdater.checkForUpdates()
   createWindow()
 })
@@ -63,14 +70,6 @@ app.on('activate', function () {
 
 ipcMain.on('message', (event, message) => {
   console.log(message) // prints "ping"
-})
-
-autoUpdater.setFeedURL({
-  provider: 'github',
-  repo: 'auto_post_facebook',
-  owner: 'yoolsylva',
-  private: true,
-  token: '72cf10d796bc6cf495cf707c33c7a278db721058'
 })
 
 autoUpdater.on('checking-for-update', () => {
