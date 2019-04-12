@@ -65,9 +65,13 @@ ipcMain.on('message', (event, message) => {
   console.log(message) // prints "ping"
 })
 
-setInterval(() => {
-  autoUpdater.checkForUpdates()
-}, 60000*5)
+autoUpdater.setFeedURL({
+  provider: 'github',
+  repo: 'auto_post_facebook',
+  owner: 'yoolsylva',
+  private: true,
+  token: '72cf10d796bc6cf495cf707c33c7a278db721058'
+})
 
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');

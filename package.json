@@ -1,6 +1,6 @@
 {
   "name": "APF-Tool",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Auto Post Facebook",
   "main": "main.js",
   "scripts": {
@@ -22,7 +22,8 @@
       {
         "provider": "github",
         "owner": "yoolsylva",
-        "repo": "auto_post_facebook"
+        "repo": "auto_post_facebook",
+        "private": true
       }
     ]
   },
