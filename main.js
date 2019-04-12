@@ -39,7 +39,7 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function () {
-  autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.checkForUpdates()
   createWindow()
 })
 
@@ -66,7 +66,7 @@ ipcMain.on('message', (event, message) => {
 })
 
 setInterval(() => {
-  autoUpdater.checkForUpdatesAndNotify()
+  autoUpdater.checkForUpdates()
 }, 60000*5)
 
 autoUpdater.on('checking-for-update', () => {
