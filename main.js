@@ -1,42 +1,7 @@
-const {app, BrowserWindow, ipcMain, session, autoUpdater} = require('electron');
-const path = require('path')
-const url = require('url')
-
-ipcMain.on('message', (event, message) => {
-  console.log(message) // prints "ping"
-})
-
-const isProduction = process.env.mode !== 'development'
-console.log(isProduction)
-if(isProduction) {
-  const server = 'https://hazel.vietbachit.now.sh/'
-  const feed = `${server}/update/${process.platform}/${app.getVersion()}`
-
-  autoUpdater.setFeedURL(feed)
-
-  setInterval(() => {
-    autoUpdater.checkForUpdates()
-  }, 60000)
-
-  autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-    const dialogOpts = {
-      type: 'info',
-      buttons: ['Restart', 'Later'],
-      title: 'Application Update',
-      message: process.platform === 'win32' ? releaseNotes : releaseName,
-      detail: 'A new version has been downloaded. Restart the application to apply the updates.'
-    }
-
-    dialog.showMessageBox(dialogOpts, (response) => {
-      if (response === 0) autoUpdater.quitAndInstall()
-    })
-  })
-
-  autoUpdater.on('error', message => {
-    console.error('There was a problem updating the application')
-    console.error(message)
-  })
-}
+const {app, BrowserWindow, ipcMain} = require('electron');
+const path = require('path');
+const url = require('url');
+const {autoUpdater} = require("electron-updater");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -91,6 +56,69 @@ app.on('activate', function () {
     createWindow()
   }
 })
+
+
+ipcMain.on('message', (event, message) => {
+  console.log(message) // prints "ping"
+})
+
+const isProduction = process.env.mode !== 'development'
+console.log(isProduction)
+if(isProduction){
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for update...');
+  })
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available.');
+  })
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('Update not available.');
+  })
+  autoUpdater.on('error', (err) => {
+    console.log('Error in auto-updater. ' + err);
+  })
+  autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    console.log(log_message);
+  })
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded');
+  });
+}
+
+/*if(isProduction) {
+  const server = 'https://hazel.vietbachit.now.sh/'
+  const feed = `${server}/update/${process.platform}/${app.getVersion()}`
+
+  autoUpdater.setFeedURL(feed)
+
+  setInterval(() => {
+    autoUpdater.checkForUpdates()
+  }, 60000)
+
+  autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+    const dialogOpts = {
+      type: 'info',
+      buttons: ['Restart', 'Later'],
+      title: 'Application Update',
+      message: process.platform === 'win32' ? releaseNotes : releaseName,
+      detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+    }
+
+    dialog.showMessageBox(dialogOpts, (response) => {
+      if (response === 0) autoUpdater.quitAndInstall()
+    })
+  })
+
+  autoUpdater.on('error', message => {
+    console.error('There was a problem updating the application')
+    console.error(message)
+  })
+}*/
+
+
 
 
 // In this file you can include the rest of your app's specific main process
