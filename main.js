@@ -65,7 +65,7 @@ ipcMain.on('message', (event, message) => {
   console.log(message) // prints "ping"
 })
 
-autoUpdater.autoDownload = true;
+autoUpdater.autoDownload = true;  
 
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
