@@ -1,0 +1,55 @@
+/* The Modal (background) */
+.modal {
+  -webkit-app-region: no-drag;
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+
+}
+
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  align-items: center;
+}
+
+.modal input {
+  height: 50px;
+  padding: 5px 16px;
+  border-radius: 10px;
+  width: 100%;
+  outline: none;
+}
+
+.modal a {
+  margin-top: 30px;
+  border: 1px solid transparent;
+  background-color: #FFA69A;
+  padding: 8px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 13px;
+  text-decoration: none;
+  width: 120px;
+  min-width: 50px;
+  border-color: #ffffff;
+  color: white;
+}
+.modal a:hover {
+  background-color: #ff7f70;
+  color: white;
+  -webkit-text-fill-color: white;
+  outline: none;
+}

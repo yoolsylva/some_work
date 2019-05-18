@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>APF Tool</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script>if (typeof module === 'object') {
+    window.module = module;
+    module = undefined;
+  }</script>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+          integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+          integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+          crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+          integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+          crossorigin="anonymous"></script>
+  <link href="assets/css/login.css" rel="stylesheet">
+  <link href="assets/css/button.css" rel="stylesheet">
+  <link href="assets/css/loading.css" rel="stylesheet">
+  <link href="assets/css/modal.css" rel="stylesheet">
+</head>
+<body>
+<div id="overlay">
+  <div id="progstat"></div>
+  <div id="progress"></div>
+</div>
+<div id="login-panel">
+  <div>
+    <img class="logo" src="assets/img/apf_tool_logo.png">
+  </div>
+  <div>
+    <input class="login-btn grow" type="image" onclick="loginFB1()" src="assets/img/apf_tool_button_login.png">
+  </div>
+  <!-- The Modal -->
+  <div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <h3>Nhập cookie:</h3>
+      <input id="cookie" type="text" placeholder="cookie"/>
+      <a href="#" id="btn-save-cookie">Save</a>
+    </div>
+
+  </div>
+  <div class="footer">
+    <p>Copyright © 2019 by KingContent.pro</p>
+    <p>Made in Vietnam</p>
+  </div>
+</div>
+<div id="main-panel" style="display: none">
+  <div class="profile-container">
+    <div class="profile-title">
+      <input id="btn-close" type="image" src="assets/img/xbutton.png" onclick="closeApp()">
+      <p>PROFILE</p>
+    </div>
+    <div class="profile-info">
+      <div class="row">
+        <div class="col-1"></div>
+        <div class="col-4">
+          <img class="profile-avatar" id="fb-avatar"
+               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOuz-KqBeVSVh8wdcivMn3ikps08XGVbTvrHIMR-T6MWYa9Uhk">
+        </div>
+        <div class="col-6">
+          <div class="row" style="margin-top: 30px">
+            <p id="fb-name" style="-webkit-text-fill-color: aliceblue;">Nguyen Quyet Thang</p>
+          </div>
+          <div class="row">
+            <p id="fb-uid" style="-webkit-text-fill-color: aliceblue;">UID: 132432532543</p>
+          </div>
+          <div class="row">
+            <a class="btn success" id="btn-confirm" onclick="start()">Bắt đầu</a>
+            <a class="btn success" id="btn-start" style="margin-left: 10px" onclick="logoutFB1()">Đăng xuất</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="history-bar">
+      <div class="history-bar-column">
+        <div>
+          <h4 id="number-scheduled-post">16</h4>
+        </div>
+        <div>
+          <p>Lịch đã lên</p>
+        </div>
+      </div>
+      <div class="history-bar-column">
+        <div>
+          <h4 id="number-collection-post">22</h4>
+        </div>
+        <div>
+          <p>Bộ sưu tập</p>
+        </div>
+      </div>
+      <div class="history-bar-column">
+        <div>
+          <h4 id="number-saved-post">322</h4>
+        </div>
+        <div>
+          <p>Content đã lưu</p>
+        </div>
+      </div>
+      <div class="history-bar-column">
+        <div>
+          <h4 id="number-saved-page">66</h4>
+        </div>
+        <div>
+          <p>Fanpage đã lưu</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <ul class="nav nav-tabs nav-justified" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="schedule-post-tab" data-toggle="tab" href="#schedule-post" role="tab"
+             aria-controls="home"
+             aria-selected="true">Post</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="history-post-tab" data-toggle="tab" href="#history-post" role="tab"
+             aria-controls="profile"
+             aria-selected="false">History</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="loadbar-overlay" id="content-loadbar">
+          <div class="loading">
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+            <div class="obj"></div>
+          </div>
+        </div>
+        <div class="tab-pane fade show active" id="schedule-post" role="tabpanel" aria-labelledby="schedule-post-tab">
+          <ul class="ul-post" id="pending-post">
+          </ul>
+        </div>
+        <div class="tab-pane fade" id="history-post" role="tabpanel" aria-labelledby="history-post-tab">
+          <ul class="ul-post" id="history-scheduled">
+            <!--<li class="list-post">-->
+            <!--<img class="post-thumpnail" src="assets/img/default-profile-pic.jpg"/>-->
+            <!--<h5>Title</h5>-->
+            <!--<p>Ngày tạo:</p>-->
+            <!--<div class="dropdown">-->
+            <!--<div class="dropdown-content">-->
+            <!--<a href="#">Link 1</a>-->
+            <!--<a href="#">Link 2</a>-->
+            <!--<a href="#">Link 3</a>-->
+            <!--</div>-->
+            <!--<img class="eye-icon dropdown" src="assets/img/eye-icon.png">-->
+            <!--</div>-->
+            <!--<p>Tổng content đăng</p>-->
+            <!--<p>Ngày đăng:</p>-->
+            <!--<span>-->
+            <!--<img src="assets/img/play.png">-->
+            <!--<p>Dang cho</p>-->
+            <!--</span>-->
+            <!--</li>-->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="./renderer.js"></script>
+</body>
+</html>

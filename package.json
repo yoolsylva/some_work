@@ -1,0 +1,45 @@
+{
+  "name": "APF-Tool",
+  "version": "2.1.1",
+  "description": "luus",
+  "main": "main.js",
+  "scripts": {
+    "start": "set mode=development&&electron .",
+    "package-window": "electron-packager . auto-post-facebook --overwrite  --asar --platform=win32 --arch=ia32 --out=release-builds --electron-version=2.0.8 app-version=1.0.3",
+    "release": "build --win --x64 -p always",
+    "dist": "build --win -p never"
+  },
+  "build": {
+    "appId": "com.electron.apftool",
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release",
+        "private": "false"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "verifyUpdateCodeSignature": false
+    }
+  },
+  "author": "Sylva",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^4.0.6",
+    "electron-builder": "^20.34.0",
+    "electron-packager": "^13.1.1"
+  },
+  "dependencies": {
+    "atob": "^2.1.2",
+    "electron-store": "^2.0.0",
+    "electron-updater": "^3.2.3",
+    "moment": "^2.24.0",
+    "node-fetch": "^2.3.0",
+    "puppeteer-core": "^1.13.0",
+    "request": "^2.88.0",
+    "rimraf": "^2.6.3"
+  }
+}

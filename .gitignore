@@ -1,0 +1,9 @@
+/node_modules
+env.json
+facebook_account
+photo_upload
+release-builds
+build
+dist
+test*
+error.txt
