@@ -180,7 +180,7 @@ async function loginFB1() {
     modal.style.display = "none";
     loadbar(200)
     browser1 = await puppeteer.launch({
-      headless: false,
+      headless: true,
       slowMo: 50,
       //userDataDir: userDataDir,
       executablePath: browserPath,
