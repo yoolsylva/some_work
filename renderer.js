@@ -20,6 +20,7 @@ let timeoutPendingPost = []
 let intervalUpdateTime = []
 let arrPendingPost = []
 let arrHistory = []
+let started = false
 
 var ovrl = id("overlay"),
   prog = id("progress"),
@@ -377,7 +378,7 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
         console.log(dialog.message());
         await dialog.accept();
       });
-      await page.goto('https://www.facebook.com/?locale=en_US', { timeout: 100000, waitUntil: 'domcontentloaded' });
+      await page.goto('https://www.facebook.com/?locale=en_US', { timeout: 100000, waitUntil: 'networkidle0' });
       await page.waitForXPath('//div[@aria-label="Create a post"]')
       await page.click('div[aria-label="Create a post"]')
       await clickDom(page, 'div[aria-label="Create a post"]')
@@ -436,6 +437,7 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
       await page.setViewport({ width: 800, height: 800 })
       await page.goto(url, { waitUntil: 'networkidle0' });
       await page.keyboard.press('KeyP');
+      await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
       await page.keyboard.type(resJson.content, { delay: 10 });
       await page.click('div[data-testid=photo-video-button]')
@@ -451,6 +453,7 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
         if (!isDisable) break
         await sleep(50)
       }
+      await page.click('div[aria-label="Create a post"]')
       const share = await page.$('div[aria-label="Create a post"] button[type=submit]')
       await share.click()
       page.on('response', async response => {
@@ -501,6 +504,7 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
       //   await page.keyboard.type(resJson.content, {delay: 10});
       // }
       await page.keyboard.press('KeyP');
+      await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"]')
       await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
@@ -518,6 +522,7 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
         if (!isDisable) break
         await sleep(50)
       }
+      await page.click('div[aria-label="Create a post"]')
       const share = await page.$('div[aria-label="Create a post"] button[type=submit]')
       await share.click()
       page.on('response', async response => {
@@ -544,8 +549,9 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
 }
 
 function printLog(text) {
+  console.log(text)
   ipcRenderer.send('message', text)
-  fs.appendFile('error.txt', `${text}\n`, function (err) {
+  fs.appendFile('error.txt', `${JSON.stringify(text)}\n`, function (err) {
     if (err) throw err;
     console.log('Saved!');
   });
@@ -722,19 +728,21 @@ function appendPost({ resJson, status, slotNumber }) {
         }
         postGroupTask = postToAllGroup()
       }
-      const postUserTask = postToUser({ page, profile_id, imageFiles, resJson, videoFiles })
+      if(resJson.profile_id){
+        const postUserTask = postToUser({ page, profile_id, imageFiles, resJson, videoFiles })
 
-      let statusUser
-      let postUserLink
-      try {
-        postUserLink = await postUserTask
-        if (postUserLink) statusUser = 'success'
-        else statusUser = 'fail'
-      } catch (e) {
-        console.error(e.message)
-        statusUser = 'fail'
-      } finally {
-        data.push({ id, status: statusUser, fb_id: profile_id, url: postUserLink })
+        let statusUser
+        let postUserLink
+        try {
+          postUserLink = await postUserTask
+          if (postUserLink) statusUser = 'success'
+          else statusUser = 'fail'
+        } catch (e) {
+          console.error(e.message)
+          statusUser = 'fail'
+        } finally {
+          data.push({ id, status: statusUser, fb_id: profile_id, url: postUserLink })
+        }
       }
 
       if (resJson.fanpage_ids.length) await postPageTask
@@ -793,17 +801,19 @@ function clearPendingPost() {
 function updatePendingPost({ resJson, type, slotNumber }) {
   switch (type) {
     case 'add':
-      clearAllInterval()
-      clearPendingPost()
+      let found = false
+      for(let i = 0; i< arrPendingPost.length; i++){
+        console.log(arrPendingPost[i].id)
+        if(arrPendingPost[i].id === resJson.id) found = true
+      }
+      if(found) return
       arrPendingPost.push(resJson)
       arrPendingPost = arrPendingPost.sort((a, b) => {
         if (moment(a.date_publish) < moment(b.date_publish)) return 1
         else if (moment(a.date_publish) > moment(b.date_publish)) return -1
         return 0
-      })
-      for (let i = 0; i < arrPendingPost.length; i++) {
-        appendPost({ resJson: arrPendingPost[i], status: 'wait', slotNumber })
-      }
+      })     
+      appendPost({ resJson, status: 'wait', slotNumber })
       break;
     case 'remove':
       const elementPost = document.getElementById(`${resJson.id}`)
@@ -834,17 +844,18 @@ async function schedulePost() {
     printLog(`receive new data:`)
     printLog(resJson.data)
     document.getElementById('number-scheduled-post').innerText = resJson.data.length + arrPendingPost.length
+    // clearAllInterval()
+    // clearPendingPost()
     resJson.data.forEach(data => {
-      const id = data.id
-      const slotNumber = store.get(data.profile_id)
-      if (!slotNumber) {
-        printLog(`Không tìm thấy account với profile_id: ${data.profile_id}`)
-        fs.appendFile('error.txt', `Data:\n${JSON.stringify(resJson)}\nKhông tìm thấy account với profile_id: ${data.profile_id}\n\n\n`, function (err) {
-          if (err) throw err;
-          console.log('Saved!');
-        });
-      }
-      updatePendingPost({ resJson: data, type: 'add', slotNumber })
+      // const slotNumber = store.get(data.profile_id)
+      // if (!slotNumber) {
+      //   printLog(`Không tìm thấy account với profile_id: ${data.profile_id}`)
+      //   fs.appendFile('error.txt', `Data:\n${JSON.stringify(resJson)}\nKhông tìm thấy account với profile_id: ${data.profile_id}\n\n\n`, function (err) {
+      //     if (err) throw err;
+      //     console.log('Saved!');
+      //   });
+      // }
+      updatePendingPost({ resJson: data, type: 'add', slotNumber: 'slot1' })
     })
   } catch (e) {
     console.error(e.message)
@@ -989,10 +1000,12 @@ function updateHistory({ data, type }) {
 }
 
 function start() {
+  if(started) return
   schedulePost()
-  setInterval(schedulePost, 60000 * 10)
+  setInterval(schedulePost, 60000 * 1)
   scheduleHistory()
   setInterval(scheduleHistory, 60000)
+  started = true
 }
 
 async function main() {
