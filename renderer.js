@@ -109,8 +109,8 @@ function clearAllInterval() {
 
 function closeApp() {
   clearAllInterval()
-  store.set('slot1.history', arrHistory)
   store.set('slot1.pendingpost', arrPendingPost)
+  store.set('slot1.history', arrHistory)
   const remote = require('electron').remote;
   var window = remote.getCurrentWindow();
   window.close();
@@ -281,10 +281,6 @@ function clearDataInfo() {
     store.delete(`slot1.history`)
     store.delete(`slot1.pendingpost`)
     store.delete(`slot1.cookie`)
-    const userDataDir = path.join(process.cwd(), `/facebook_account/slot1`)
-    rimraf(userDataDir, function () {
-      resolve()
-    });
   })
 }
 
@@ -373,7 +369,7 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
     try {
       setTimeout(() => {
         resolve(null)
-      }, 60000 * 30)
+      }, 60000 * 15)
       page.on('dialog', async dialog => {
         console.log(dialog.message());
         await dialog.accept();
@@ -397,8 +393,9 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
       await page.click('div[aria-label="Create a post"]')
       await sleep(1000)
       await clickDom(page, 'div[aria-label="Create a post"]')
-      // await clickDom(page, 'div[aria-label="Create a post"] button[type=submit]')
+      await clickDom(page, 'div[aria-label="Create a post"] button[type=submit]')
       await page.click('div[aria-label="Create a post"] button[type=submit]')
+      
       page.on('response', async response => {
         if ('xhr' !== response.request().resourceType() && response.request().method !== 'POST') {
           return;
@@ -427,7 +424,7 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
     try {
       setTimeout(() => {
         resolve(null)
-      }, 60000 * 30)
+      }, 60000 * 15)
 
       page.on('dialog', async dialog => {
         console.log(dialog.message());
@@ -437,7 +434,7 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
       await page.setViewport({ width: 800, height: 800 })
       await page.goto(url, { waitUntil: 'networkidle0' });
       await page.keyboard.press('KeyP');
-      await page.click('div[aria-label="Create a post"]')
+      //await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
       await page.keyboard.type(resJson.content, { delay: 10 });
       await page.click('div[data-testid=photo-video-button]')
@@ -485,7 +482,7 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
     try {
       setTimeout(() => {
         resolve(null)
-      }, 60000 * 30)
+      }, 60000 * 15)
       page.on('dialog', async dialog => {
         console.log(dialog.message());
         await dialog.accept();
@@ -505,8 +502,8 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
       // }
       await page.keyboard.press('KeyP');
       await page.click('div[aria-label="Create a post"]')
-      await page.waitFor('div[aria-label="Create a post"]')
-      await page.click('div[aria-label="Create a post"]')
+      //await page.waitFor('div[aria-label="Create a post"]')
+      //await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
       await page.keyboard.type(resJson.content, { delay: 10 });
 
@@ -623,9 +620,9 @@ function appendPost({ resJson, status, slotNumber }) {
     for (let i = arrPendingPost.length - 1; i >= 0; i--) {
       if (arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
     }
-    console.log('wait running')
+    printLog('wait running')
     await waitForRunningDone()
-    console.log('posting now')
+    printLog('posting now')
     imgStatus.setAttribute('src', `assets/img/play.png`)
     pStatus.innerText = 'Đang post...'
     let browser
@@ -635,12 +632,16 @@ function appendPost({ resJson, status, slotNumber }) {
       const imageFiles = await Promise.all(resJson.images.map((image, index) => {
         return download(image, `${index}.png`)
       })).catch(e => {
-        alert('Link hình ảnh không hợp lệ')
+        let myNotification = new Notification('Lỗi', {
+          body: 'Link hình ảnh không hợp lệ'
+        })
       })
       const videoFiles = await Promise.all(resJson.videos.map((video, index) => {
         return download(video, `${index}.mp4`)
       })).catch(e => {
-        alert('Link video không hợp lệ')
+        let myNotification = new Notification('Lỗi', {
+          body: 'Link video không hợp lệ'
+        })
       })
       browser = await puppeteer.launch({
         headless: false,
@@ -651,25 +652,7 @@ function appendPost({ resJson, status, slotNumber }) {
           `--window-size=800,800`,
           //'--window-position=0,0'
         ],
-      });
-      const context = browser.defaultBrowserContext();
-      await context.overridePermissions('https://facebook.com', [
-        'geolocation',
-        'notifications',
-        'background-sync',
-        'midi',
-        'midi-sysex',
-        'camera',
-        'microphone',
-        'ambient-light-sensor',
-        'accelerometer',
-        'gyroscope',
-        'magnetometer',
-        'accessibility-events',
-        'clipboard-read',
-        'clipboard-write',
-        'payment-handler'
-      ]);
+      });  
       const pages = await browser.pages();
       const page = pages[0]
       const cookieSaved = store.get(`slot1.cookie`)
@@ -803,7 +786,6 @@ function updatePendingPost({ resJson, type, slotNumber }) {
     case 'add':
       let found = false
       for(let i = 0; i< arrPendingPost.length; i++){
-        console.log(arrPendingPost[i].id)
         if(arrPendingPost[i].id === resJson.id) found = true
       }
       if(found) return
@@ -812,7 +794,7 @@ function updatePendingPost({ resJson, type, slotNumber }) {
         if (moment(a.date_publish) < moment(b.date_publish)) return 1
         else if (moment(a.date_publish) > moment(b.date_publish)) return -1
         return 0
-      })     
+      })
       appendPost({ resJson, status: 'wait', slotNumber })
       break;
     case 'remove':
@@ -827,8 +809,6 @@ function updatePendingPost({ resJson, type, slotNumber }) {
 }
 
 async function schedulePost() {
-  showLoadingData()
-  await sleep(3000)
   clearLog()
   printLog('Started!')
   const profile_id = store.get('slot1.id')
@@ -842,27 +822,18 @@ async function schedulePost() {
     const resJson = await res.json()
     if (resJson.error) throw new Error(resJson.message)
     printLog(`receive new data:`)
-    printLog(resJson.data)
+    //printLog(resJson)
     document.getElementById('number-scheduled-post').innerText = resJson.data.length + arrPendingPost.length
-    // clearAllInterval()
-    // clearPendingPost()
     resJson.data.forEach(data => {
-      // const slotNumber = store.get(data.profile_id)
-      // if (!slotNumber) {
-      //   printLog(`Không tìm thấy account với profile_id: ${data.profile_id}`)
-      //   fs.appendFile('error.txt', `Data:\n${JSON.stringify(resJson)}\nKhông tìm thấy account với profile_id: ${data.profile_id}\n\n\n`, function (err) {
-      //     if (err) throw err;
-      //     console.log('Saved!');
-      //   });
-      // }
+      //if(moment(data.date_publish).isBefore(moment())) return
       updatePendingPost({ resJson: data, type: 'add', slotNumber: 'slot1' })
     })
   } catch (e) {
-    console.error(e.message)
     printLog(e.message)
-    alert(e.message)
+    let myNotification = new Notification('Lỗi', {
+      body: e.message
+    })
   }
-  hideLoadingData()
 }
 
 async function scheduleHistory() {
@@ -870,7 +841,6 @@ async function scheduleHistory() {
   try {
     const res = await fetch(`http://kingcontent.pro/api/get-schedules.php?key=OTJhMTJDMTRtcThTMTIwMkc1M3g&fb_id=${profile_id}`)
     const resJson = await res.json()
-    console.log(resJson)
     if (resJson.error) throw new Error(resJson.message)
     if (!resJson.data.schedules || !resJson.data.schedules.length) return
     document.getElementById('number-saved-post').innerText = resJson.data.total_saved_posts
@@ -879,7 +849,6 @@ async function scheduleHistory() {
 
     updateHistory({ data: resJson.data.schedules, type: 'replace' })
   } catch (e) {
-    console.error(e.message)
     printLog(e.message)
   }
 }
@@ -915,24 +884,6 @@ function appendHistory({ data }) {
           slowMo: 50,
           executablePath: browserPath,
         });
-        const context = browserReview.defaultBrowserContext();
-        await context.overridePermissions('https://facebook.com', [
-          'geolocation',
-          'notifications',
-          'background-sync',
-          'midi',
-          'midi-sysex',
-          'camera',
-          'microphone',
-          'ambient-light-sensor',
-          'accelerometer',
-          'gyroscope',
-          'magnetometer',
-          'accessibility-events',
-          'clipboard-read',
-          'clipboard-write',
-          'payment-handler'
-        ]);
         const pages = await browserReview.pages();
         const page = pages[0]
         await page.setViewport({ width: 1000, height: 800 })
@@ -999,13 +950,15 @@ function updateHistory({ data, type }) {
   }
 }
 
-function start() {
+async function start() {
   if(started) return
+  showLoadingData()
   schedulePost()
   setInterval(schedulePost, 60000 * 1)
-  scheduleHistory()
+  await scheduleHistory()
   setInterval(scheduleHistory, 60000)
   started = true
+  hideLoadingData()
 }
 
 async function main() {
@@ -1024,7 +977,14 @@ async function main() {
     showDataInfo({ profile_id, name, img })
     arrPendingPost = store.get(`slot1.pendingpost`) || []
     arrHistory = store.get(`slot1.history`) || []
-    updatePendingPost({ slotNumber: 'slot1' })
+    for (let i = arrPendingPost.length - 1; i >= 0; i--) {
+      if(moment(data.date_publish).isBefore(moment())) arrPendingPost.splice(i, 1);
+    }
+    arrPendingPost.forEach(data => {
+      if(moment(data.date_publish).isBefore(moment())) return
+      updatePendingPost({ resJson: data, slotNumber: 'slot1' })
+    })
+    
     updateHistory({ data: arrHistory, type: 'replace' })
   }
 }
