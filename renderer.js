@@ -144,124 +144,124 @@ async function logoutFB1() {
 }
 
 
-async function loginFB1() {
+async function showSaveCookie() {
   var modal = document.getElementById('myModal');
   modal.style.display = "block";
-  await clearDataInfo()
+  await clearDataInfo().catch(e => console.log(e))
+}
 
-  const btnCookie = document.getElementById('btn-save-cookie')
-  btnCookie.onclick = async () => {
-    var modal = document.getElementById('myModal');
-    modal.style.display = "none";
-    const cookie = document.getElementById('cookie').value
-    const output = {};
-    const arrCookie = []
-    cookie.split(/\s*;\s*/).forEach(function (pair) {
-      pair = pair.split(/\s*=\s*/);
-      output[pair[0]] = pair.splice(1).join('=');
-    });
-    const time = parseInt((new Date().getTime() / 1000).toFixed(0)) + 11573456
-    for (const key in output) {
-      const tmpCookie = {
-        "name": "",
-        "value": "",
-        "domain": ".facebook.com",
-        "path": "/",
-        "expires": time,
-        "size": 100,
-        "httpOnly": true,
-        "secure": true,
-        "session": false
-      }
-      tmpCookie.name = key
-      tmpCookie.value = output[key]
-      arrCookie.push(tmpCookie)
+async function loginFB1() {
+  console.log('login')
+  var modal = document.getElementById('myModal');
+  modal.style.display = "none";
+  const cookie = document.getElementById('cookie').value
+  const output = {};
+  const arrCookie = []
+  cookie.split(/\s*;\s*/).forEach(function (pair) {
+    pair = pair.split(/\s*=\s*/);
+    output[pair[0]] = pair.splice(1).join('=');
+  });
+  const time = parseInt((new Date().getTime() / 1000).toFixed(0)) + 11573456
+  for (const key in output) {
+    const tmpCookie = {
+      "name": "",
+      "value": "",
+      "domain": ".facebook.com",
+      "path": "/",
+      "expires": time,
+      "size": 100,
+      "httpOnly": true,
+      "secure": true,
+      "session": false
     }
-    store.set(`slot1.cookie`, arrCookie)
-    modal.style.display = "none";
-    loadbar(200)
-    browser1 = await puppeteer.launch({
-      headless: true,
-      slowMo: 50,
-      //userDataDir: userDataDir,
-      executablePath: browserPath,
-      args: [
-        `--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.62 Safari/537.36`,
-      ]
-    });
-    const context = browser1.defaultBrowserContext();
-    await context.overridePermissions('https://facebook.com', [
-      'geolocation',
-      'notifications',
-      'background-sync',
-      'midi',
-      'midi-sysex',
-      'camera',
-      'microphone',
-      'ambient-light-sensor',
-      'accelerometer',
-      'gyroscope',
-      'magnetometer',
-      'accessibility-events',
-      'clipboard-read',
-      'clipboard-write',
-      'payment-handler'
-    ]);
-    const pages = await browser1.pages();
-    page1 = pages[0]
-    await page1.setViewport({ width: 1000, height: 800 })
+    tmpCookie.name = key
+    tmpCookie.value = output[key]
+    arrCookie.push(tmpCookie)
+  }
+  store.set(`slot1.cookie`, arrCookie)
+  modal.style.display = "none";
+  loadbar(200)
+  browser1 = await puppeteer.launch({
+    headless: true,
+    slowMo: 50,
+    //userDataDir: userDataDir,
+    executablePath: browserPath,
+    args: [
+      `--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.62 Safari/537.36`,
+    ]
+  });
+  const context = browser1.defaultBrowserContext();
+  await context.overridePermissions('https://facebook.com', [
+    'geolocation',
+    'notifications',
+    'background-sync',
+    'midi',
+    'midi-sysex',
+    'camera',
+    'microphone',
+    'ambient-light-sensor',
+    'accelerometer',
+    'gyroscope',
+    'magnetometer',
+    'accessibility-events',
+    'clipboard-read',
+    'clipboard-write',
+    'payment-handler'
+  ]);
+  const pages = await browser1.pages();
+  page1 = pages[0]
+  await page1.setViewport({ width: 1000, height: 800 })
 
-    await page1.setCookie(...arrCookie)
-    await page1.goto('https://facebook.com', { waitUntil: 'domcontentloaded' });
-    let count = 0
-    while (true) {
-      await sleep(500)
-      count += 500
-      if (count > 60000 * 2) {
-        store.delete(`slot1.cookie`)
-        alert('Đăng nhập thất bại, xin hãy tắt ứng dụng và thử dùng cookie khác đăng nhập lại')
-        break
-      }
-      try {
-        const result = await page1.evaluate(() => {
-          var html = document.getElementsByTagName('html')[0].innerHTML
-          var re = new RegExp('"USER_ID":"(.*?)"')
-          var result = html.match(re);
-          var profile_id = result && result[1]
-          let username = document.querySelector('div[data-click="profile_icon"] a').getAttribute('href').replace('https://www.facebook.com/', '')
-          if (username.includes('profile.php?id=')) username = username.replace('profile.php?id=', '')
-          re = new RegExp('"NAME":"(.*?)"')
-          result = html.match(re);
-          var name = result && JSON.parse('"' + result[1] + '"')
-          var img = document.querySelector('div[data-click="profile_icon"] a img').getAttribute('src')
+  await page1.setCookie(...arrCookie)
+  await page1.goto('https://facebook.com', { waitUntil: 'domcontentloaded' });
+  let count = 0
+  while (true) {
+    await sleep(500)
+    count += 500
+    if (count > 60000) {
+      store.delete(`slot1.cookie`)
+      alert('Đăng nhập thất bại, xin hãy tắt ứng dụng và thử dùng cookie khác đăng nhập lại')
+      break
+    }
+    try {
+      const result = await page1.evaluate(() => {
+        var html = document.getElementsByTagName('html')[0].innerHTML
+        var re = new RegExp('"USER_ID":"(.*?)"')
+        var result = html.match(re);
+        var profile_id = result && result[1]
+        let username = document.querySelector('div[data-click="profile_icon"] a').getAttribute('href').replace('https://www.facebook.com/', '')
+        if (username.includes('profile.php?id=')) username = username.replace('profile.php?id=', '')
+        re = new RegExp('"NAME":"(.*?)"')
+        result = html.match(re);
+        var name = result && JSON.parse('"' + result[1] + '"')
+        var img = document.querySelector('div[data-click="profile_icon"] a img').getAttribute('src')
 
-          if (!profile_id || !img || !name || !username) return null
-          return { profile_id, img, name, username }
-        })
+        if (!profile_id || !img || !name || !username) return null
+        return { profile_id, img, name, username }
+      })
 
-        if (!result) continue
-        const { profile_id, img, username, name } = result
-        console.log(result)
+      if (!result) continue
+      const { profile_id, img, username, name } = result
+      console.log(result)
 
-        await page1.goto(`https://facebook.com/${profile_id}`, { waitUntil: 'domcontentloaded' });
-        await page1.waitForSelector('.photoContainer')
-        const { img_bigger } = await page1.evaluate(() => {
-          const img_bigger = document.querySelector('.photoContainer img').getAttribute('src')
-          return { img_bigger }
-        })
-        await browser1.close()
-        console.log(img_bigger)
-        doneLoading()
-        setMainScreen()
-        saveDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
-        showDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
-        break
-      } catch (e) {
-        console.error(e.message)
-      }
+      await page1.goto(`https://facebook.com/${profile_id}`, { waitUntil: 'domcontentloaded' });
+      await page1.waitForSelector('.photoContainer')
+      const { img_bigger } = await page1.evaluate(() => {
+        const img_bigger = document.querySelector('.photoContainer img').getAttribute('src')
+        return { img_bigger }
+      })
+      await browser1.close()
+      console.log(img_bigger)
+      doneLoading()
+      setMainScreen()
+      saveDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
+      showDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
+      break
+    } catch (e) {
+      console.error(e.message)
     }
   }
-};
+}
 
 function setLoginScreen() {
   document.getElementById("main-panel").style.display = 'none'
@@ -395,7 +395,7 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
       await clickDom(page, 'div[aria-label="Create a post"]')
       await clickDom(page, 'div[aria-label="Create a post"] button[type=submit]')
       await page.click('div[aria-label="Create a post"] button[type=submit]')
-      
+
       page.on('response', async response => {
         if ('xhr' !== response.request().resourceType() && response.request().method !== 'POST') {
           return;
@@ -404,12 +404,12 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
           if (response.status() !== 200) return resolve(null)
           const text = await response.text()
           var reg = new RegExp('{"id":"(.*?)"}')
-          if(!text.match(reg)) return resolve(null)
+          if (!text.match(reg)) return resolve(null)
           const match = atob(text.match(reg)[1])
           const arr = match.split(":")
-          if(!arr || !arr.length) return resolve(null)
-          const id = arr[arr.length-1]
-          return resolve('https://www.facebook.com/' + id) 
+          if (!arr || !arr.length) return resolve(null)
+          const id = arr[arr.length - 1]
+          return resolve('https://www.facebook.com/' + id)
         }
       })
     } catch (e) {
@@ -461,11 +461,11 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
           if (response.status() !== 200) return resolve(null)
           const text = await response.text()
           var reg = new RegExp('{"id":"(.*?)"}')
-          if(!text.match(reg)) return resolve(null)
+          if (!text.match(reg)) return resolve(null)
           const match = atob(text.match(reg)[1])
           const arr = match.split(":")
-          if(!arr || !arr.length) return resolve(null)
-          const id = arr[arr.length-1]
+          if (!arr || !arr.length) return resolve(null)
+          const id = arr[arr.length - 1]
           return resolve('https://www.facebook.com/' + id)
         }
       })
@@ -530,11 +530,11 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
           if (response.status() !== 200) return resolve(null)
           const text = await response.text()
           var reg = new RegExp('{"id":"(.*?)"}')
-          if(!text.match(reg)) return resolve(null)
+          if (!text.match(reg)) return resolve(null)
           const match = atob(text.match(reg)[1])
           const arr = match.split(":")
-          if(!arr || !arr.length) return resolve(null)
-          const id = arr[arr.length-1]
+          if (!arr || !arr.length) return resolve(null)
+          const id = arr[arr.length - 1]
           return resolve('https://www.facebook.com/' + id)
         }
       })
@@ -652,7 +652,7 @@ function appendPost({ resJson, status, slotNumber }) {
           `--window-size=800,800`,
           //'--window-position=0,0'
         ],
-      });  
+      });
       const pages = await browser.pages();
       const page = pages[0]
       const cookieSaved = store.get(`slot1.cookie`)
@@ -711,7 +711,7 @@ function appendPost({ resJson, status, slotNumber }) {
         }
         postGroupTask = postToAllGroup()
       }
-      if(resJson.profile_id){
+      if (resJson.profile_id) {
         const postUserTask = postToUser({ page, profile_id, imageFiles, resJson, videoFiles })
 
         let statusUser
@@ -785,10 +785,10 @@ function updatePendingPost({ resJson, type, slotNumber }) {
   switch (type) {
     case 'add':
       let found = false
-      for(let i = 0; i< arrPendingPost.length; i++){
-        if(arrPendingPost[i].id === resJson.id) found = true
+      for (let i = 0; i < arrPendingPost.length; i++) {
+        if (arrPendingPost[i].id === resJson.id) found = true
       }
-      if(found) return
+      if (found) return
       arrPendingPost.push(resJson)
       arrPendingPost = arrPendingPost.sort((a, b) => {
         if (moment(a.date_publish) < moment(b.date_publish)) return 1
@@ -951,7 +951,7 @@ function updateHistory({ data, type }) {
 }
 
 async function start() {
-  if(started) return
+  if (started) return
   showLoadingData()
   schedulePost()
   setInterval(schedulePost, 60000 * 1)
@@ -978,13 +978,13 @@ async function main() {
     arrPendingPost = store.get(`slot1.pendingpost`) || []
     arrHistory = store.get(`slot1.history`) || []
     for (let i = arrPendingPost.length - 1; i >= 0; i--) {
-      if(moment(data.date_publish).isBefore(moment())) arrPendingPost.splice(i, 1);
+      if (moment(data.date_publish).isBefore(moment())) arrPendingPost.splice(i, 1);
     }
     arrPendingPost.forEach(data => {
-      if(moment(data.date_publish).isBefore(moment())) return
+      if (moment(data.date_publish).isBefore(moment())) return
       updatePendingPost({ resJson: data, slotNumber: 'slot1' })
     })
-    
+
     updateHistory({ data: arrHistory, type: 'replace' })
   }
 }
