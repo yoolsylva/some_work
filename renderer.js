@@ -10,6 +10,7 @@ const request = require("request");
 const moment = require('moment');
 const rimraf = require('rimraf');
 const { ipcRenderer } = require('electron');
+const {version} = require(path.join(process.cwd(), 'package.json'))
 
 let browserPath
 let browser1, browser2, browser3, browser4, browser5
@@ -617,12 +618,12 @@ function appendPost({ resJson, status, slotNumber }) {
   }, 1000))
 
   timeoutPendingPost.push(setTimeout(async () => {
-    for (let i = arrPendingPost.length - 1; i >= 0; i--) {
-      if (arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
-    }
     printLog('wait running')
     await waitForRunningDone()
     printLog('posting now')
+    for (let i = arrPendingPost.length - 1; i >= 0; i--) {
+      if (arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
+    }
     imgStatus.setAttribute('src', `assets/img/play.png`)
     pStatus.innerText = 'Đang post...'
     let browser
@@ -731,15 +732,16 @@ function appendPost({ resJson, status, slotNumber }) {
       if (resJson.fanpage_ids.length) await postPageTask
       if (resJson.group_ids.length) await postGroupTask
 
-      console.log(JSON.stringify(data))
+      console.log({ key: 'OTJhMTJDMTRtcThTMTIwMkc1M3g', data })
 
-      await fetch('http://kingcontent.pro/api/response-data.php', {
+      const result = await fetch('http://kingcontent.pro/api/response-data.php', {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ key: 'OTJhMTJDMTRtcThTMTIwMkc1M3g', data })
       })
+      printLog(result)
     } catch (e) {
       console.error(e)
       printLog(e)
@@ -874,6 +876,7 @@ function appendHistory({ data }) {
 
   const elmDropdownContent = document.createElement('div')
   elmDropdownContent.setAttribute('class', 'dropdown-content')
+  printLog(data)
   if (data.contents.url && data.contents.url.length) {
     for (let i = 0; i < data.contents.url.length; i++) {
       const elmUrl = document.createElement('a')
@@ -963,6 +966,7 @@ async function start() {
 
 async function main() {
   loadbar(7)
+  document.getElementById('app-version').innerText = 'v' + version
   createFile(path.join(process.cwd(), 'chrome-path.txt'), 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe').then(() => {
     browserPath = fs.readFileSync(path.join(process.cwd(), 'chrome-path.txt')).toString()
   })

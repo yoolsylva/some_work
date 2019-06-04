@@ -65,6 +65,8 @@ ipcMain.on('message', (event, message) => {
   console.log(message) // prints "ping"
 })
 
+setInterval(() => {autoUpdater.checkForUpdates()}, 60000*15)
+
 autoUpdater.autoDownload = true;  
 
 autoUpdater.on('checking-for-update', () => {
