@@ -11,6 +11,7 @@ const moment = require('moment');
 const rimraf = require('rimraf');
 const { ipcRenderer } = require('electron');
 const {version} = require(path.join(process.cwd(), 'package.json'))
+const atob = require('atob')
 
 let browserPath
 let browser1, browser2, browser3, browser4, browser5
@@ -214,7 +215,7 @@ async function loginFB1() {
   await page1.setViewport({ width: 1000, height: 800 })
 
   await page1.setCookie(...arrCookie)
-  await page1.goto('https://facebook.com', { waitUntil: 'domcontentloaded' });
+  await page1.goto('https://facebook.com', { waitUntil: 'networkidle0', timeout: 100000 });
   let count = 0
   while (true) {
     await sleep(500)
@@ -245,7 +246,7 @@ async function loginFB1() {
       const { profile_id, img, username, name } = result
       console.log(result)
 
-      await page1.goto(`https://facebook.com/${profile_id}`, { waitUntil: 'domcontentloaded' });
+      await page1.goto(`https://facebook.com/${profile_id}`, { waitUntil: 'networkidle0', timeout: 100000 });
       await page1.waitForSelector('.photoContainer')
       const { img_bigger } = await page1.evaluate(() => {
         const img_bigger = document.querySelector('.photoContainer img').getAttribute('src')
@@ -319,52 +320,6 @@ async function clickDom(page, dom) {
   await page.mouse.up({ button: 'left' });
 }
 
-function postToUser({ page }) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      setTimeout(() => {
-        resolve(null)
-      }, 60000 * 30)
-      page.on('dialog', async dialog => {
-        console.log(dialog.message());
-        await dialog.accept();
-      });
-
-      await page.goto('https://www.facebook.com/?locale=en_US', { waitUntil: 'domcontentloaded' })
-      await page.waitForXPath('//div[@aria-label="Create a post"]')
-      await page.click('div[aria-label="Create a post"]')
-      await clickDom(page, 'div[aria-label="Create a post"]')
-
-      await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]', { timeout: 100000 })
-      await page.keyboard.type('hom nay em chan qua, ai den bec em di', { delay: 10 });
-      await sleep(1000)
-      await page.click('div[aria-label="Create a post"]')
-      while (true) {
-        const isDisable = await page.$x('//div[@aria-label="Create a post"]//button[@type="submit"]/@disabled')
-        if (!isDisable.length) break
-        await sleep(50)
-      }
-      await page.click('div[aria-label="Create a post"]')
-      await sleep(1000)
-      await clickDom(page, 'div[aria-label="Create a post"]')
-      page.on('response', async response => {
-        if ('xhr' !== response.request().resourceType() && response.request().method !== 'POST') {
-          return;
-        }
-        if (response.url().includes("https://www.facebook.com/webgraphql/mutation/?doc_id=")) {
-          if (response.status() !== 200) return resolve(null)
-          const text = await response.text()
-          var reg = new RegExp('{"id":"(.*?)"}')
-          return resolve('https://www.facebook.com/' + atob(text.match(reg)[1]).split(":")[2])
-        }
-      })
-    } catch (e) {
-      console.log(e.message)
-      resolve(null)
-    }
-  })
-}
-
 function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -433,7 +388,7 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
       });
       const url = `https://facebook.com/${page_id}?locale=en_US`
       await page.setViewport({ width: 800, height: 800 })
-      await page.goto(url, { waitUntil: 'networkidle0' });
+      await page.goto(url, { timeout: 100000, waitUntil: 'networkidle0' });
       await page.keyboard.press('KeyP');
       //await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
@@ -490,7 +445,7 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
       });
       const url = `https://facebook.com/${group_id}?locale=en_US`
       await page.setViewport({ width: 800, height: 800 })
-      await page.goto(url, { waitUntil: 'networkidle0' });
+      await page.goto(url, { timeout: 100000, waitUntil: 'networkidle0' });
       // await page.waitForXPath('//*[@data-testid="status-attachment-mentions-input"] | //*[@data-testid="react-composer-root"]//*[@data-testid="status-attachment-selector"]')
       // const inputText = await page.$x('//*[@data-testid="status-attachment-mentions-input"]//div | //*[@data-testid="react-composer-root"]//*[@data-testid="status-attachment-selector"]')
       // if (!inputText.length) throw new Error('Not found input text in group!')
@@ -647,11 +602,9 @@ function appendPost({ resJson, status, slotNumber }) {
       browser = await puppeteer.launch({
         headless: false,
         slowMo: 50,
-        //userDataDir: userDataDir,
         executablePath: browserPath,
         args: [
-          `--window-size=800,800`,
-          //'--window-position=0,0'
+          `--window-size=800,800`
         ],
       });
       const pages = await browser.pages();
@@ -672,11 +625,11 @@ function appendPost({ resJson, status, slotNumber }) {
             let postPageLink
             try {
               postPageLink = await postToPage({ page: newPage, page_id: resJson.fanpage_ids[i], imageFiles, resJson, videoFiles })
-              if (postPageLink) status = 'success'
-              else status = 'fail'
+              if (postPageLink) status = true
+              else status = false
             } catch (e) {
               console.error(e.message)
-              status = 'fail'
+              status = false
             } finally {
               data.push({ id, status, fb_id: resJson.fanpage_ids[i], url: postPageLink })
             }
@@ -700,11 +653,11 @@ function appendPost({ resJson, status, slotNumber }) {
                 resJson,
                 videoFiles
               })
-              status = 'success'
+              status = true
               data.push({ id, status, post_id })
             } catch (e) {
               console.error(e.message)
-              status = 'fail'
+              status = false
             } finally {
               data.push({ id, status, fb_id: resJson.group_ids[i], url: '' })
             }
@@ -719,11 +672,11 @@ function appendPost({ resJson, status, slotNumber }) {
         let postUserLink
         try {
           postUserLink = await postUserTask
-          if (postUserLink) statusUser = 'success'
-          else statusUser = 'fail'
+          if (postUserLink) statusUser = true
+          else statusUser = false
         } catch (e) {
           console.error(e.message)
-          statusUser = 'fail'
+          statusUser = false
         } finally {
           data.push({ id, status: statusUser, fb_id: profile_id, url: postUserLink })
         }
@@ -732,7 +685,7 @@ function appendPost({ resJson, status, slotNumber }) {
       if (resJson.fanpage_ids.length) await postPageTask
       if (resJson.group_ids.length) await postGroupTask
 
-      console.log({ key: 'OTJhMTJDMTRtcThTMTIwMkc1M3g', data })
+      printLog({ key: 'OTJhMTJDMTRtcThTMTIwMkc1M3g', data })
 
       const result = await fetch('http://kingcontent.pro/api/response-data.php', {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -982,10 +935,9 @@ async function main() {
     arrPendingPost = store.get(`slot1.pendingpost`) || []
     arrHistory = store.get(`slot1.history`) || []
     for (let i = arrPendingPost.length - 1; i >= 0; i--) {
-      if (moment(data.date_publish).isBefore(moment())) arrPendingPost.splice(i, 1);
+      if (moment(arrPendingPost[i].date_publish).isBefore(moment())) arrPendingPost.splice(i, 1);
     }
     arrPendingPost.forEach(data => {
-      if (moment(data.date_publish).isBefore(moment())) return
       updatePendingPost({ resJson: data, slotNumber: 'slot1' })
     })
 
