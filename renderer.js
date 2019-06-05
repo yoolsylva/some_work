@@ -149,11 +149,10 @@ async function logoutFB1() {
 async function showSaveCookie() {
   var modal = document.getElementById('myModal');
   modal.style.display = "block";
-  await clearDataInfo().catch(e => console.log(e))
+  clearDataInfo()
 }
 
 async function loginFB1() {
-  console.log('login')
   var modal = document.getElementById('myModal');
   modal.style.display = "none";
   const cookie = document.getElementById('cookie').value
@@ -276,14 +275,14 @@ function setMainScreen() {
 }
 
 function clearDataInfo() {
-  return new Promise((resolve, reject) => {
+    arrPendingPost = []
+    arrHistory = []
     store.delete(`slot1.id`)
     store.delete(`slot1.name`)
     store.delete(`slot1.picture`)
     store.delete(`slot1.history`)
     store.delete(`slot1.pendingpost`)
     store.delete(`slot1.cookie`)
-  })
 }
 
 function saveDataInfo({ profile_id, name, img, username }) {
@@ -323,9 +322,6 @@ async function clickDom(page, dom) {
 function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
   return new Promise(async (resolve, reject) => {
     try {
-      setTimeout(() => {
-        resolve(null)
-      }, 60000 * 15)
       page.on('dialog', async dialog => {
         console.log(dialog.message());
         await dialog.accept();
@@ -341,6 +337,9 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
       imageFiles && imageFiles.length && await input.uploadFile(...imageFiles)
       videoFiles && videoFiles.length && await input.uploadFile(...videoFiles)
       await page.click('div[aria-label="Create a post"]')
+      setTimeout(() => {
+        resolve(null)
+      }, 60000 * 3)
       while (true) {
         const isDisable = await page.$x('//div[@aria-label="Create a post"]//button[@type="submit"]/@disabled')
         if (!isDisable.length) break
@@ -378,10 +377,6 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
 async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
   return new Promise(async (resolve, reject) => {
     try {
-      setTimeout(() => {
-        resolve(null)
-      }, 60000 * 15)
-
       page.on('dialog', async dialog => {
         console.log(dialog.message());
         await dialog.accept();
@@ -398,6 +393,9 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
       const input = await page.$("input[data-testid=media-attachment-add-photo]")
       imageFiles && imageFiles.length && await input.uploadFile(...imageFiles)
       videoFiles && videoFiles.length && await input.uploadFile(...videoFiles)
+      setTimeout(() => {
+        resolve(null)
+      }, 60000 * 3)
       await sleep(1000)
       while (true) {
         const isDisable = await page.evaluate(() => {
@@ -436,9 +434,6 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
 async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) {
   return new Promise(async (resolve, reject) => {
     try {
-      setTimeout(() => {
-        resolve(null)
-      }, 60000 * 15)
       page.on('dialog', async dialog => {
         console.log(dialog.message());
         await dialog.accept();
@@ -466,6 +461,9 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
       const input = await page.$('input[data-testid=media-sprout]')
       imageFiles && imageFiles.length && await input.uploadFile(...imageFiles)
       videoFiles && videoFiles.length && await input.uploadFile(...videoFiles)
+      setTimeout(() => {
+        resolve(null)
+      }, 60000 * 3)
       await sleep(500)
       await page.waitForSelector('button[data-testid=react-composer-post-button]')
       while (true) {
@@ -518,8 +516,6 @@ function getRandomBetween(min, max) {
 }
 
 function appendPost({ resJson, status, slotNumber }) {
-  const isExist = document.getElementById(`${resJson.id}`)
-  if (isExist) return
   const item = document.createElement('li')
   item.setAttribute('id', `${resJson.id}`)
   item.setAttribute('class', 'list-post')
@@ -621,17 +617,13 @@ function appendPost({ resJson, status, slotNumber }) {
 
         const postToAllPage = async () => {
           for (let i = 0; i < resJson.fanpage_ids.length; i++) {
-            let status
-            let postPageLink
+            let postPageLink = null
             try {
               postPageLink = await postToPage({ page: newPage, page_id: resJson.fanpage_ids[i], imageFiles, resJson, videoFiles })
-              if (postPageLink) status = true
-              else status = false
             } catch (e) {
-              console.error(e.message)
-              status = false
+              printLog(e.message)
             } finally {
-              data.push({ id, status, fb_id: resJson.fanpage_ids[i], url: postPageLink })
+              data.push({ id: resJson.id, status: postPageLink? true: false, fb_id: resJson.fanpage_ids[i], url: postPageLink })
             }
           }
         }
@@ -644,42 +636,37 @@ function appendPost({ resJson, status, slotNumber }) {
 
         const postToAllGroup = async () => {
           for (let i = 0; i < resJson.group_ids.length; i++) {
-            let status
+            let postGroupLink = null
             try {
-              const post_id = await postToGroup({
+              postGroupLink = await postToGroup({
                 page: newPageGroup,
                 group_id: resJson.group_ids[i],
                 imageFiles,
                 resJson,
                 videoFiles
               })
-              status = true
-              data.push({ id, status, post_id })
             } catch (e) {
-              console.error(e.message)
-              status = false
+              printLog(e.message)
             } finally {
-              data.push({ id, status, fb_id: resJson.group_ids[i], url: '' })
+              data.push({ id: resJson.id, status: postGroupLink? true: false, fb_id: resJson.group_ids[i], url: postGroupLink })
             }
           }
         }
         postGroupTask = postToAllGroup()
       }
-      if (resJson.profile_id) {
+      if (resJson.profile_id && resJson.profile_id.length) {
         const postUserTask = postToUser({ page, profile_id, imageFiles, resJson, videoFiles })
 
-        let statusUser
-        let postUserLink
+        let postUserLink = null
         try {
           postUserLink = await postUserTask
-          if (postUserLink) statusUser = true
-          else statusUser = false
         } catch (e) {
-          console.error(e.message)
-          statusUser = false
+          printLog(e.message)
         } finally {
-          data.push({ id, status: statusUser, fb_id: profile_id, url: postUserLink })
+          data.push({ id: resJson.id,  status: postUserLink? true: false, fb_id: profile_id, url: postUserLink })
         }
+      } else {
+        await page.close()
       }
 
       if (resJson.fanpage_ids.length) await postPageTask
@@ -696,7 +683,6 @@ function appendPost({ resJson, status, slotNumber }) {
       })
       printLog(result)
     } catch (e) {
-      console.error(e)
       printLog(e)
     } finally {
       if (browser) await browser.close()
@@ -741,7 +727,7 @@ function updatePendingPost({ resJson, type, slotNumber }) {
     case 'add':
       let found = false
       for (let i = 0; i < arrPendingPost.length; i++) {
-        if (arrPendingPost[i].id === resJson.id) found = true
+        if (arrPendingPost[i].id === resJson.id ||  document.getElementById(`${resJson.id}`)) found = true
       }
       if (found) return
       arrPendingPost.push(resJson)
@@ -829,11 +815,9 @@ function appendHistory({ data }) {
 
   const elmDropdownContent = document.createElement('div')
   elmDropdownContent.setAttribute('class', 'dropdown-content')
-  printLog(data)
-  if (data.contents.url && data.contents.url.length) {
-    for (let i = 0; i < data.contents.url.length; i++) {
+  if (data.contents.url) {
       const elmUrl = document.createElement('a')
-      elmUrl.innerText = `Link ${i + 1}`
+      elmUrl.innerText = 'Xem bài viết'
       elmUrl.onclick = async () => {
         const browserReview = await puppeteer.launch({
           headless: false,
@@ -842,11 +826,12 @@ function appendHistory({ data }) {
         });
         const pages = await browserReview.pages();
         const page = pages[0]
+        const arrCookie = store.get('slot1.cookie')
+        await page.setCookie(...arrCookie)
         await page.setViewport({ width: 1000, height: 800 })
-        await page.goto(data.contents.url[i], { timeout: 0 })
+        await page.goto(data.contents.url, { timeout: 0 })
       }
       elmDropdownContent.appendChild(elmUrl)
-    }
   }
   elmDropdown.appendChild(elmDropdownContent)
 
@@ -894,8 +879,13 @@ function updateHistory({ data, type }) {
     case 'replace':
       clearHistory()
       arrHistory = data
-      for (let i = 0; i < data.length; i++) {
-        appendHistory({ data: data[i] })
+      arrHistory = arrHistory.sort((a, b) => {
+        if (moment(a.contents.date_publish) < moment(b.contents.date_publish)) return 1
+        else if (moment(a.contents.date_publish) > moment(b.contents.date_publish)) return -1
+        return 0
+      })
+      for (let i = 0; i < arrHistory.length; i++) {
+        appendHistory({ data: arrHistory[i] })
       }
       break;
     default:
