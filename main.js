@@ -13,7 +13,10 @@ function createWindow() {
     width: 500,
     height: 900,
     frame: true,
-    resizable: true
+    resizable: true,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
 
   // and load the index.html of the app.
