@@ -10,8 +10,8 @@ const request = require("request");
 const moment = require('moment');
 const rimraf = require('rimraf');
 const { ipcRenderer } = require('electron');
-const {version} = require(path.join(process.cwd(), 'package.json'))
 const atob = require('atob')
+const version = require('electron').remote.app.getVersion();
 
 let browserPath
 let browser1, browser2, browser3, browser4, browser5
