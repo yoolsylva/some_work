@@ -24,6 +24,8 @@ let intervalUpdateTime = []
 let arrPendingPost = []
 let arrHistory = []
 let started = false
+let arrPosted = []
+let scheduleHistoryInterval, schedulePostInterval
 
 var ovrl = id("overlay"),
   prog = id("progress"),
@@ -100,6 +102,8 @@ async function checkLogin() {
 }
 
 function clearAllInterval() {
+  scheduleHistoryInterval && clearInterval(scheduleHistoryInterval)
+  schedulePostInterval && clearInterval(schedulePostInterval)
   for (var i = 0; i < intervalUpdateTime.length; i++) {
     clearInterval(intervalUpdateTime[i]);
   }
@@ -117,6 +121,7 @@ function closeApp() {
     return false
   })
   store.set('slot1.history', arrHistory)
+  store.set('slot1.posted', arrPosted)
   const remote = require('electron').remote;
   var window = remote.getCurrentWindow();
   window.close();
@@ -144,9 +149,12 @@ async function logoutFB1() {
   loadbar(10)
   clearAllInterval()
   clearDataInfo()
+  clearHistory()
+  clearPendingPost()
   await sleep(2000)
   doneLoading()
   setLoginScreen()
+  started = false
 }
 
 
@@ -255,7 +263,7 @@ async function loginFB1() {
     printLog(e.message)
     notifier.notify({
       title: 'Lỗi',
-      message: 'Đăng nhập thất bại, hãy thử cookie khác',
+      message: 'Đăng nhập thất bại, hãy thử lại',
       sound: true,
     });
     await browser1.close()
@@ -276,12 +284,14 @@ function setMainScreen() {
 function clearDataInfo() {
   arrPendingPost = []
   arrHistory = []
+  arrPosted = []
   store.delete(`slot1.id`)
   store.delete(`slot1.name`)
   store.delete(`slot1.picture`)
   store.delete(`slot1.history`)
   store.delete(`slot1.pendingpost`)
   store.delete(`slot1.cookie`)
+  store.delete('slot.posted')
 }
 
 function saveDataInfo({ profile_id, name, img, username }) {
@@ -501,10 +511,6 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
 function printLog(text) {
   console.log(text)
   ipcRenderer.send('message', text)
-  fs.appendFile('error.txt', `${JSON.stringify(text)}\n`, function (err) {
-    if (err) throw err;
-    console.log('Saved!');
-  });
 }
 
 function clearLog() {
@@ -515,6 +521,12 @@ function getRandomBetween(min, max) {
 }
 
 function showPendingPost(data) {
+  var found = arrPosted.find(function(id) {
+    return id === resJson.id;
+  })
+  printLog(found)
+  if(found) return
+
   const exist = document.getElementById(`${data.contents.id}`) ? true : false
   let item
   if (!exist) {
@@ -584,12 +596,19 @@ function showPendingPost(data) {
 }
 
 function scheduleTimeoutPost(resJson) {
+  var found = arrPosted.find(function(id) {
+    return id === resJson.id;
+  })
+  printLog(found)
+  if(found) return
+
   const now = moment(new Date()); //todays date
   const end = moment(resJson.date_publish); // another date
   const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : moment.duration(0);
   let totalTime = parseInt(duration.asSeconds())
 
   timeoutPendingPost.push(setTimeout(async () => {
+    arrPosted.push(resJson.id)
     printLog('wait running')
     await waitForRunningDone()
     printLog('posting now')
@@ -598,7 +617,10 @@ function scheduleTimeoutPost(resJson) {
       if (arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
     }
     const elementPost = document.getElementById(`${resJson.id}`)
-    if (elementPost) elementPost.querySelector('.status-post').innerText = 'Đang post...'
+    if (elementPost) {
+      elementPost.querySelector('.status-post').innerText = 'Đang post...'
+      elementPost.querySelector('span img').setAttribute('src', `assets/img/play.png`)
+    }
 
     let browser
     try {
@@ -767,11 +789,9 @@ async function schedulePost() {
     printLog(`receive new data:`)
     console.log(resJson)
     resJson.data.forEach(data => {
-      //if(moment(data.date_publish).isBefore(moment())) return
-      //updatePendingPost({ resJson: data, type: 'add', slotNumber: 'slot1' })
       let found = false
       for (let i = 0; i < arrPendingPost.length; i++) {
-        if (arrPendingPost[i].id === data.id || document.getElementById(`${data.id}`)) found = true
+        if (arrPendingPost[i].id === data.id) found = true
       }
       console.log(found)
       if (found) return
@@ -787,7 +807,7 @@ async function schedulePost() {
     printLog(e.message)
     notifier.notify({
       title: 'Lỗi',
-      message: e.message,
+      message: 'Không thể lấy bài viết mới từ server',
       sound: true,
     })
   }
@@ -902,18 +922,23 @@ function updateHistory({ data, type }) {
     case 'replace':
       clearHistory()
       arrHistory = data
-      arrHistory = arrHistory.sort((a, b) => {
+      let arrShowPendingPost = arrHistory.filter(item => {
+        if (item.contents.status === '2' || item.contents.status === '3') return true
+        return false
+      })
+      arrShowPendingPost = arrShowPendingPost.sort((a, b) => {
         if (moment(a.contents.date_publish) < moment(b.contents.date_publish)) return 1
         else if (moment(a.contents.date_publish) > moment(b.contents.date_publish)) return -1
         return 0
       })
-      const arrShowPendingPost = arrHistory.filter(item => {
-        if (item.contents.status === '2' || item.contents.status === '3') return true
-        return false
-      })
-      const arrShowHistoryPost = arrHistory.filter(item => {
+      let arrShowHistoryPost = arrHistory.filter(item => {
         if (item.contents.status === '1' || item.contents.status === '4') return true
         return false
+      })
+      arrShowHistoryPost = arrShowHistoryPost.sort((a, b) => {
+        if (moment(a.contents.date_publish) < moment(b.contents.date_publish)) return 1
+        else if (moment(a.contents.date_publish) > moment(b.contents.date_publish)) return -1
+        return 0
       })
       document.getElementById('number-scheduled-post').innerText = arrShowPendingPost.length
       for (let i = 0; i < arrShowHistoryPost.length; i++) {
@@ -932,9 +957,9 @@ async function start() {
   if (started) return
   showLoadingData()
   schedulePost()
-  setInterval(schedulePost, 60000 * 1)
+  schedulePostInterval = setInterval(schedulePost, 60000 * 1)
   await scheduleHistory()
-  setInterval(scheduleHistory, 60000)
+  scheduleHistoryInterval = setInterval(scheduleHistory, 60000)
   started = true
   hideLoadingData()
 }
@@ -954,15 +979,8 @@ async function main() {
     setMainScreen()
     const { profile_id, name, img } = getDataInfo()
     showDataInfo({ profile_id, name, img })
-    arrPendingPost = store.get(`slot1.pendingpost`) || []
+    arrPosted = store.get('slot1.posted') || []
     arrHistory = store.get(`slot1.history`) || []
-    for (let i = arrPendingPost.length - 1; i >= 0; i--) {
-      if (moment(arrPendingPost[i].date_publish).isBefore(moment())) arrPendingPost.splice(i, 1);
-    }
-    arrPendingPost.forEach(data => {
-      updatePendingPost({ resJson: data, slotNumber: 'slot1' })
-    })
-
     updateHistory({ data: arrHistory, type: 'replace' })
   }
 }
