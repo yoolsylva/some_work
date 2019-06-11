@@ -1,6 +1,6 @@
 {
   "name": "APF-Tool",
-  "version": "3.0.10",
+  "version": "3.0.11",
   "description": "luus",
   "main": "main.js",
   "scripts": {
@@ -37,6 +37,7 @@
     "electron-updater": "^3.2.3",
     "moment": "^2.24.0",
     "node-fetch": "^2.3.0",
+    "node-notifier": "^5.4.0",
     "puppeteer-core": "^1.13.0",
     "request": "^2.88.0",
     "rimraf": "^2.6.3"

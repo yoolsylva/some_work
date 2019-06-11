@@ -11,6 +11,7 @@ const moment = require('moment');
 const rimraf = require('rimraf');
 const { ipcRenderer } = require('electron');
 const atob = require('atob')
+const notifier = require('node-notifier');
 const version = require('electron').remote.app.getVersion();
 
 let browserPath
@@ -111,7 +112,10 @@ function clearAllInterval() {
 
 function closeApp() {
   clearAllInterval()
-  store.set('slot1.pendingpost', arrPendingPost)
+  arrHistory = arrHistory.filter(item => {
+    if (item.contents.status === '1' || item.contents.status === '4') return true
+    return false
+  })
   store.set('slot1.history', arrHistory)
   const remote = require('electron').remote;
   var window = remote.getCurrentWindow();
@@ -179,88 +183,83 @@ async function loginFB1() {
     tmpCookie.value = output[key]
     arrCookie.push(tmpCookie)
   }
-  store.set(`slot1.cookie`, arrCookie)
   modal.style.display = "none";
   loadbar(200)
-  browser1 = await puppeteer.launch({
-    headless: true,
-    slowMo: 50,
-    //userDataDir: userDataDir,
-    executablePath: browserPath,
-    args: [
-      `--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.62 Safari/537.36`,
-    ]
-  });
-  const context = browser1.defaultBrowserContext();
-  await context.overridePermissions('https://facebook.com', [
-    'geolocation',
-    'notifications',
-    'background-sync',
-    'midi',
-    'midi-sysex',
-    'camera',
-    'microphone',
-    'ambient-light-sensor',
-    'accelerometer',
-    'gyroscope',
-    'magnetometer',
-    'accessibility-events',
-    'clipboard-read',
-    'clipboard-write',
-    'payment-handler'
-  ]);
-  const pages = await browser1.pages();
-  page1 = pages[0]
-  await page1.setViewport({ width: 1000, height: 800 })
+  try {
+    browser1 = await puppeteer.launch({
+      headless: true,
+      slowMo: 50,
+      //userDataDir: userDataDir,
+      executablePath: browserPath,
+      args: [
+        `--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.62 Safari/537.36`,
+      ]
+    });
+    const context = browser1.defaultBrowserContext();
+    await context.overridePermissions('https://facebook.com', [
+      'geolocation',
+      'notifications',
+      'background-sync',
+      'midi',
+      'midi-sysex',
+      'camera',
+      'microphone',
+      'ambient-light-sensor',
+      'accelerometer',
+      'gyroscope',
+      'magnetometer',
+      'accessibility-events',
+      'clipboard-read',
+      'clipboard-write',
+      'payment-handler'
+    ]);
+    const pages = await browser1.pages();
+    page1 = pages[0]
+    await page1.setViewport({ width: 1000, height: 800 })
 
-  await page1.setCookie(...arrCookie)
-  await page1.goto('https://facebook.com', { waitUntil: 'networkidle0', timeout: 100000 });
-  let count = 0
-  while (true) {
-    await sleep(500)
-    count += 500
-    if (count > 60000) {
-      store.delete(`slot1.cookie`)
-      alert('Đăng nhập thất bại, xin hãy tắt ứng dụng và thử dùng cookie khác đăng nhập lại')
-      break
-    }
-    try {
-      const result = await page1.evaluate(() => {
-        var html = document.getElementsByTagName('html')[0].innerHTML
-        var re = new RegExp('"USER_ID":"(.*?)"')
-        var result = html.match(re);
-        var profile_id = result && result[1]
-        let username = document.querySelector('div[data-click="profile_icon"] a').getAttribute('href').replace('https://www.facebook.com/', '')
-        if (username.includes('profile.php?id=')) username = username.replace('profile.php?id=', '')
-        re = new RegExp('"NAME":"(.*?)"')
-        result = html.match(re);
-        var name = result && JSON.parse('"' + result[1] + '"')
-        var img = document.querySelector('div[data-click="profile_icon"] a img').getAttribute('src')
+    await page1.setCookie(...arrCookie)
+    await page1.goto('https://facebook.com', { waitUntil: 'networkidle0', timeout: 100000 });
 
-        if (!profile_id || !img || !name || !username) return null
-        return { profile_id, img, name, username }
-      })
+    const result = await page1.evaluate(() => {
+      var html = document.getElementsByTagName('html')[0].innerHTML
+      var re = new RegExp('"USER_ID":"(.*?)"')
+      var result = html.match(re);
+      var profile_id = result && result[1]
+      let username = document.querySelector('div[data-click="profile_icon"] a') && document.querySelector('div[data-click="profile_icon"] a').getAttribute('href').replace('https://www.facebook.com/', '')
+      if (!username) return null
+      if (username.includes('profile.php?id=')) username = username.replace('profile.php?id=', '')
+      re = new RegExp('"NAME":"(.*?)"')
+      result = html.match(re);
+      var name = result && JSON.parse('"' + result[1] + '"')
+      var img = document.querySelector('div[data-click="profile_icon"] a img') && document.querySelector('div[data-click="profile_icon"] a img').getAttribute('src')
 
-      if (!result) continue
-      const { profile_id, img, username, name } = result
-      console.log(result)
+      if (!profile_id || !img || !name || !username) return null
+      return { profile_id, img, name, username }
+    })
+    if (!result) throw new Error('not found info')
 
-      await page1.goto(`https://facebook.com/${profile_id}`, { waitUntil: 'networkidle0', timeout: 100000 });
-      await page1.waitForSelector('.photoContainer')
-      const { img_bigger } = await page1.evaluate(() => {
-        const img_bigger = document.querySelector('.photoContainer img').getAttribute('src')
-        return { img_bigger }
-      })
-      await browser1.close()
-      console.log(img_bigger)
-      doneLoading()
-      setMainScreen()
-      saveDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
-      showDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
-      break
-    } catch (e) {
-      console.error(e.message)
-    }
+    const { profile_id, img, username, name } = result
+    await page1.goto(`https://facebook.com/${profile_id}`, { waitUntil: 'networkidle0', timeout: 100000 });
+    await page1.waitForSelector('.photoContainer')
+    const { img_bigger } = await page1.evaluate(() => {
+      const img_bigger = document.querySelector('.photoContainer img').getAttribute('src')
+      return { img_bigger }
+    })
+    await browser1.close()
+    doneLoading()
+    setMainScreen()
+    saveDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
+    showDataInfo({ profile_id, name, username, img: img_bigger ? img_bigger : img })
+    store.set(`slot1.cookie`, arrCookie)
+  } catch (e) {
+    printLog(e.message)
+    notifier.notify({
+      title: 'Lỗi',
+      message: 'Đăng nhập thất bại, hãy thử cookie khác',
+      sound: true,
+    });
+    await browser1.close()
+    doneLoading()
   }
 }
 
@@ -275,14 +274,14 @@ function setMainScreen() {
 }
 
 function clearDataInfo() {
-    arrPendingPost = []
-    arrHistory = []
-    store.delete(`slot1.id`)
-    store.delete(`slot1.name`)
-    store.delete(`slot1.picture`)
-    store.delete(`slot1.history`)
-    store.delete(`slot1.pendingpost`)
-    store.delete(`slot1.cookie`)
+  arrPendingPost = []
+  arrHistory = []
+  store.delete(`slot1.id`)
+  store.delete(`slot1.name`)
+  store.delete(`slot1.picture`)
+  store.delete(`slot1.history`)
+  store.delete(`slot1.pendingpost`)
+  store.delete(`slot1.cookie`)
 }
 
 function saveDataInfo({ profile_id, name, img, username }) {
@@ -515,68 +514,92 @@ function getRandomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function appendPost({ resJson, status, slotNumber }) {
-  const item = document.createElement('li')
-  item.setAttribute('id', `${resJson.id}`)
-  item.setAttribute('class', 'list-post')
-  const img = document.createElement('img')
+function showPendingPost(data) {
+  const exist = document.getElementById(`${data.contents.id}`) ? true : false
+  let item
+  if (!exist) {
+    item = document.createElement('li')
+    item.setAttribute('class', 'list-post')
+    item.setAttribute('id', `${data.contents.id}`)
+    document.getElementById('pending-post').appendChild(item)
+  }
+  item = document.getElementById(`${data.contents.id}`)
+
+  const img = item.querySelector(`.post-thumpnail`) || document.createElement('img')
   img.setAttribute('class', 'post-thumpnail')
-  img.setAttribute('src', resJson.images.length ? resJson.images[0] : 'assets/img/apf_tool_logo.png')
-  const h5 = document.createElement('h5')
-  h5.innerText = resJson.content
-  const imgEye = document.createElement('img')
+  img.setAttribute('src', data.contents.images.length ? data.contents.images[0] : 'assets/img/apf_tool_logo.png')
+  const h5 = item.querySelector(`h5`) || document.createElement('h5')
+  h5.innerText = data.contents.content
+  const imgEye = item.querySelector(`.eye-icon.dropdown`) || document.createElement('img')
   imgEye.setAttribute('class', 'eye-icon dropdown')
   imgEye.setAttribute('src', 'assets/img/eye-icon.png')
 
   const now = moment(new Date()); //todays date
-  const end = moment(resJson.date_publish); // another date
+  const end = moment(data.contents.date_publish); // another date
   const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : moment.duration(0);
   let totalTime = parseInt(duration.asSeconds())
   //let totalTime = getRandomBetween(20, 30)
   const { mnts, hrs, seconds } = convertSecondsToCountdown(totalTime)
 
-  const p1 = document.createElement('p')
-  p1.innerText = 'Ngày tạo: ' + moment(resJson.date_publish).format('DD/MM/YYYY')
-  const p2 = document.createElement('p')
-  p2.innerText = 'Tổng content đăng: ' + resJson.images.length
-  const spanStatus = document.createElement('span')
-  const imgStatus = document.createElement('img')
-  imgStatus.setAttribute('src', `assets/img/${status}.png`)
-  const pStatus = document.createElement('p')
-  pStatus.innerText = status === 'wait' ? 'Đang chờ' : ''
-  spanStatus.appendChild(imgStatus)
-  spanStatus.appendChild(pStatus)
+  const p1 = item.querySelector(`p.date-publish`) || document.createElement('p')
+  p1.setAttribute('class', 'date-publish')
+  p1.innerText = 'Ngày tạo: ' + moment(data.contents.date_publish).format('DD/MM/YYYY')
+  const p2 = item.querySelector(`p.total-content`) || document.createElement('p')
+  p2.setAttribute('class', 'total-content')
+  p2.innerText = 'Tổng content đăng: ' + data.contents.images.length
 
-  item.appendChild(img)
-  item.appendChild(h5)
-  item.appendChild(p1)
-  item.appendChild(imgEye)
-  item.appendChild(p2)
-  const countdount = document.createElement('p')
+  const spanStatus = item.querySelector(`span`) || document.createElement('span')
+  const imgStatus = spanStatus.querySelector('img') || document.createElement('img')
+  imgStatus.setAttribute('src', `assets/img/${data.contents.status === '2' ? 'wait' : 'pause'}.png`)
+  const pStatus = item.querySelector(`span p.status-post`) || document.createElement('p')
+  pStatus.setAttribute('class', 'status-post')
+  pStatus.innerText = data.contents.status === '2' ? 'Đang chờ' : 'Tạm dừng'
+  const countdount = item.querySelector(`p.countdount-post`) || document.createElement('p')
+  countdount.setAttribute('class', 'countdount-post')
   countdount.innerText = `Đếm ngược: ${hrs}:${mnts}:${seconds}`
-  item.appendChild(countdount)
-  item.appendChild(spanStatus)
+  if (!exist) {
+    spanStatus.appendChild(imgStatus)
+    spanStatus.appendChild(pStatus)
 
-  document.getElementById('pending-post').appendChild(item)
+    item.appendChild(img)
+    item.appendChild(h5)
+    item.appendChild(p1)
+    item.appendChild(imgEye)
+    item.appendChild(p2)
+    item.appendChild(countdount)
+    item.appendChild(spanStatus)
+  }
 
-  intervalUpdateTime.push(setInterval(() => {
-    if (totalTime <= 0) {
-      countdount.innerText = `Đếm ngược: 00:00:00`
-      return
-    }
-    const { hrs, mnts, seconds } = convertSecondsToCountdown(--totalTime)
-    countdount.innerText = `Đếm ngược: ${hrs}:${mnts}:${seconds}`
-  }, 1000))
+  if (data.contents.status === '2') {
+    intervalUpdateTime.push(setInterval(() => {
+      if (totalTime <= 0) {
+        countdount.innerText = `Đếm ngược: 00:00:00`
+        //pStatus.innerText = `Đang post...`
+        return
+      }
+      const { hrs, mnts, seconds } = convertSecondsToCountdown(--totalTime)
+      countdount.innerText = `Đếm ngược: ${hrs}:${mnts}:${seconds}`
+    }, 1000))
+  }
+}
+
+function scheduleTimeoutPost(resJson) {
+  const now = moment(new Date()); //todays date
+  const end = moment(resJson.date_publish); // another date
+  const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : moment.duration(0);
+  let totalTime = parseInt(duration.asSeconds())
 
   timeoutPendingPost.push(setTimeout(async () => {
     printLog('wait running')
     await waitForRunningDone()
     printLog('posting now')
+    // clear post on data
     for (let i = arrPendingPost.length - 1; i >= 0; i--) {
       if (arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
     }
-    imgStatus.setAttribute('src', `assets/img/play.png`)
-    pStatus.innerText = 'Đang post...'
+    const elementPost = document.getElementById(`${resJson.id}`)
+    if (elementPost) elementPost.querySelector('.status-post').innerText = 'Đang post...'
+
     let browser
     try {
       isRunning = true
@@ -584,15 +607,19 @@ function appendPost({ resJson, status, slotNumber }) {
       const imageFiles = await Promise.all(resJson.images.map((image, index) => {
         return download(image, `${index}.png`)
       })).catch(e => {
-        let myNotification = new Notification('Lỗi', {
-          body: 'Link hình ảnh không hợp lệ'
-        })
+        notifier.notify({
+          title: 'Lỗi',
+          message: 'Link hình ảnh không hợp lệ',
+          sound: true,
+        });
       })
       const videoFiles = await Promise.all(resJson.videos.map((video, index) => {
         return download(video, `${index}.mp4`)
       })).catch(e => {
-        let myNotification = new Notification('Lỗi', {
-          body: 'Link video không hợp lệ'
+        notifier.notify({
+          title: 'Lỗi',
+          message: 'Link video không hợp lệ',
+          sound: true,
         })
       })
       browser = await puppeteer.launch({
@@ -623,7 +650,7 @@ function appendPost({ resJson, status, slotNumber }) {
             } catch (e) {
               printLog(e.message)
             } finally {
-              data.push({ id: resJson.id, status: postPageLink? true: false, fb_id: resJson.fanpage_ids[i], url: postPageLink })
+              data.push({ id: resJson.id, status: postPageLink ? true : false, fb_id: resJson.fanpage_ids[i], url: postPageLink })
             }
           }
         }
@@ -648,7 +675,7 @@ function appendPost({ resJson, status, slotNumber }) {
             } catch (e) {
               printLog(e.message)
             } finally {
-              data.push({ id: resJson.id, status: postGroupLink? true: false, fb_id: resJson.group_ids[i], url: postGroupLink })
+              data.push({ id: resJson.id, status: postGroupLink ? true : false, fb_id: resJson.group_ids[i], url: postGroupLink })
             }
           }
         }
@@ -663,7 +690,7 @@ function appendPost({ resJson, status, slotNumber }) {
         } catch (e) {
           printLog(e.message)
         } finally {
-          data.push({ id: resJson.id,  status: postUserLink? true: false, fb_id: profile_id, url: postUserLink })
+          data.push({ id: resJson.id, status: postUserLink ? true : false, fb_id: profile_id, url: postUserLink })
         }
       } else {
         await page.close()
@@ -687,7 +714,9 @@ function appendPost({ resJson, status, slotNumber }) {
     } finally {
       if (browser) await browser.close()
       isRunning = false
-      updatePendingPost({ resJson, type: 'remove', slotNumber })
+      // clear post on ui
+      const elementPost = document.getElementById(`${resJson.id}`)
+      if (elementPost) elementPost.parentNode.removeChild(elementPost)
     }
   }, Number(totalTime) * 1000))
 }
@@ -695,7 +724,7 @@ function appendPost({ resJson, status, slotNumber }) {
 function waitForRunningDone() {
   return new Promise(async resolve => {
     while (true) {
-      await sleep(5000)
+      await sleep(1000)
       if (!isRunning) resolve()
     }
   })
@@ -722,33 +751,6 @@ function clearPendingPost() {
   }
 }
 
-function updatePendingPost({ resJson, type, slotNumber }) {
-  switch (type) {
-    case 'add':
-      let found = false
-      for (let i = 0; i < arrPendingPost.length; i++) {
-        if (arrPendingPost[i].id === resJson.id ||  document.getElementById(`${resJson.id}`)) found = true
-      }
-      if (found) return
-      arrPendingPost.push(resJson)
-      arrPendingPost = arrPendingPost.sort((a, b) => {
-        if (moment(a.date_publish) < moment(b.date_publish)) return 1
-        else if (moment(a.date_publish) > moment(b.date_publish)) return -1
-        return 0
-      })
-      appendPost({ resJson, status: 'wait', slotNumber })
-      break;
-    case 'remove':
-      const elementPost = document.getElementById(`${resJson.id}`)
-      if (elementPost) elementPost.parentNode.removeChild(elementPost)
-      break;
-    default:
-      for (let i = 0; i < arrPendingPost.length; i++) {
-        appendPost({ resJson: arrPendingPost[i], status: 'wait', slotNumber })
-      }
-  }
-}
-
 async function schedulePost() {
   clearLog()
   printLog('Started!')
@@ -763,16 +765,30 @@ async function schedulePost() {
     const resJson = await res.json()
     if (resJson.error) throw new Error(resJson.message)
     printLog(`receive new data:`)
-    //printLog(resJson)
-    document.getElementById('number-scheduled-post').innerText = resJson.data.length + arrPendingPost.length
+    console.log(resJson)
     resJson.data.forEach(data => {
       //if(moment(data.date_publish).isBefore(moment())) return
-      updatePendingPost({ resJson: data, type: 'add', slotNumber: 'slot1' })
+      //updatePendingPost({ resJson: data, type: 'add', slotNumber: 'slot1' })
+      let found = false
+      for (let i = 0; i < arrPendingPost.length; i++) {
+        if (arrPendingPost[i].id === data.id || document.getElementById(`${data.id}`)) found = true
+      }
+      console.log(found)
+      if (found) return
+      arrPendingPost.push(data)
+      arrPendingPost = arrPendingPost.sort((a, b) => {
+        if (moment(a.date_publish) < moment(b.date_publish)) return 1
+        else if (moment(a.date_publish) > moment(b.date_publish)) return -1
+        return 0
+      })
+      scheduleTimeoutPost(data)
     })
   } catch (e) {
     printLog(e.message)
-    let myNotification = new Notification('Lỗi', {
-      body: e.message
+    notifier.notify({
+      title: 'Lỗi',
+      message: e.message,
+      sound: true,
     })
   }
 }
@@ -813,31 +829,46 @@ function appendHistory({ data }) {
   const elmDropdown = document.createElement('div')
   elmDropdown.setAttribute('class', 'dropdown')
 
-  const elmDropdownContent = document.createElement('div')
-  elmDropdownContent.setAttribute('class', 'dropdown-content')
-  if (data.contents.url) {
-      const elmUrl = document.createElement('a')
-      elmUrl.innerText = 'Xem bài viết'
-      elmUrl.onclick = async () => {
-        const browserReview = await puppeteer.launch({
-          headless: false,
-          slowMo: 50,
-          executablePath: browserPath,
-        });
-        const pages = await browserReview.pages();
-        const page = pages[0]
-        const arrCookie = store.get('slot1.cookie')
-        await page.setCookie(...arrCookie)
-        await page.setViewport({ width: 1000, height: 800 })
-        await page.goto(data.contents.url, { timeout: 0 })
-      }
-      elmDropdownContent.appendChild(elmUrl)
-  }
-  elmDropdown.appendChild(elmDropdownContent)
+  // const elmDropdownContent = document.createElement('div')
+  // elmDropdownContent.setAttribute('class', 'dropdown-content')
+  // if (data.contents.url) {
+  //   const elmUrl = document.createElement('a')
+  //   elmUrl.innerText = 'Xem bài viết'
+  //   elmUrl.onclick = async () => {
+  //     const browserReview = await puppeteer.launch({
+  //       headless: false,
+  //       slowMo: 50,
+  //       executablePath: browserPath,
+  //     });
+  //     const pages = await browserReview.pages();
+  //     const page = pages[0]
+  //     const arrCookie = store.get('slot1.cookie')
+  //     await page.setCookie(...arrCookie)
+  //     await page.setViewport({ width: 1000, height: 800 })
+  //     await page.goto(data.contents.url, { timeout: 0 })
+  //   }
+  //   elmDropdownContent.appendChild(elmUrl)
+  // }
+  //elmDropdown.appendChild(elmDropdownContent)
 
   const imgEye = document.createElement('img')
   imgEye.setAttribute('class', 'eye-icon dropdown')
   imgEye.setAttribute('src', 'assets/img/eye-icon.png')
+  if (data.contents.url) {
+    imgEye.onclick = async () => {
+      const browserReview = await puppeteer.launch({
+        headless: false,
+        slowMo: 50,
+        executablePath: browserPath,
+      });
+      const pages = await browserReview.pages();
+      const page = pages[0]
+      const arrCookie = store.get('slot1.cookie')
+      await page.setCookie(...arrCookie)
+      await page.setViewport({ width: 1000, height: 800 })
+      await page.goto(data.contents.url, { timeout: 0 })
+    }
+  }
 
   elmDropdown.appendChild(imgEye)
 
@@ -847,9 +878,9 @@ function appendHistory({ data }) {
   p2.innerText = 'Tổng content đăng: ' + data.contents.images.length
   const spanStatus = document.createElement('span')
   const imgStatus = document.createElement('img')
-  imgStatus.setAttribute('src', status ? `assets/img/done.png` : `assets/img/stop.png`)
+  imgStatus.setAttribute('src', data.contents.status === '1' ? `assets/img/done.png` : `assets/img/stop.png`)
   const pStatus = document.createElement('p')
-  pStatus.innerText = status ? 'Hoàn tất' : 'Gặp Lỗi'
+  pStatus.innerText = data.contents.status === '1' ? 'Hoàn tất' : 'Gặp Lỗi'
   spanStatus.appendChild(imgStatus)
   spanStatus.appendChild(pStatus)
 
@@ -868,14 +899,6 @@ function appendHistory({ data }) {
 
 function updateHistory({ data, type }) {
   switch (type) {
-    case 'add':
-      arrHistory.unshift(data)
-      clearHistory()
-      store.set(`slot1.history`, arrHistory)
-      for (let i = 0; i < arrHistory.length; i++) {
-        appendHistory({ data: arrHistory[i] })
-      }
-      break;
     case 'replace':
       clearHistory()
       arrHistory = data
@@ -884,15 +907,24 @@ function updateHistory({ data, type }) {
         else if (moment(a.contents.date_publish) > moment(b.contents.date_publish)) return -1
         return 0
       })
-      for (let i = 0; i < arrHistory.length; i++) {
-        appendHistory({ data: arrHistory[i] })
+      const arrShowPendingPost = arrHistory.filter(item => {
+        if (item.contents.status === '2' || item.contents.status === '3') return true
+        return false
+      })
+      const arrShowHistoryPost = arrHistory.filter(item => {
+        if (item.contents.status === '1' || item.contents.status === '4') return true
+        return false
+      })
+      document.getElementById('number-scheduled-post').innerText = arrShowPendingPost.length
+      for (let i = 0; i < arrShowHistoryPost.length; i++) {
+        appendHistory({ data: arrShowHistoryPost[i] })
       }
+      for (let i = 0; i < arrShowPendingPost.length; i++) {
+        showPendingPost(arrShowPendingPost[i])
+      }
+
       break;
     default:
-      clearHistory()
-      for (let i = 0; i < arrHistory.length; i++) {
-        appendHistory({ data: arrHistory[i] })
-      }
   }
 }
 
