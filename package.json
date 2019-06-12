@@ -1,6 +1,6 @@
 {
   "name": "APF-Tool",
-  "version": "3.0.13",
+  "version": "3.0.14",
   "description": "luus",
   "main": "main.js",
   "scripts": {
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "atob": "^2.1.2",
+    "clipboardy": "^2.0.0",
     "electron-store": "^2.0.0",
     "electron-updater": "^3.2.3",
     "moment": "^2.24.0",

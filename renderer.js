@@ -13,13 +13,14 @@ const { ipcRenderer } = require('electron');
 const atob = require('atob')
 const notifier = require('node-notifier');
 const version = require('electron').remote.app.getVersion();
+const clipboardy = require('clipboardy');
 
 let browserPath
 let browser1, browser2, browser3, browser4, browser5
 let page1, page2, page3, page4, page5
 let isRunning = false
 let isLogin = false
-let timeoutPendingPost = []
+let timeoutPendingPost = {}
 let intervalUpdateTime = []
 let arrPendingPost = []
 let arrHistory = []
@@ -111,7 +112,10 @@ function clearAllInterval() {
   for (var i = 0; i < timeoutPendingPost.length; i++) {
     clearTimeout(timeoutPendingPost[i]);
   }
-  timeoutPendingPost = []
+  for(var property in timeoutPendingPost){
+    clearTimeout(timeoutPendingPost[property])
+  }
+  timeoutPendingPost = {}
 }
 
 function closeApp() {
@@ -339,7 +343,12 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
       await clickDom(page, 'div[aria-label="Create a post"]')
 
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
-      await page.keyboard.type(resJson.content, { delay: 0 });
+      //await page.keyboard.type(resJson.content, { delay: 0 });
+      clipboardy.writeSync(resJson.content);
+      await page.keyboard.down('ControlLeft');
+      await page.keyboard.press('KeyV');
+      await page.keyboard.up('ControlLeft');
+
       const input = await page.$('input[type=file]')
       imageFiles && imageFiles.length && await input.uploadFile(...imageFiles)
       videoFiles && videoFiles.length && await input.uploadFile(...videoFiles)
@@ -394,7 +403,11 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
       await page.keyboard.press('KeyP');
       //await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
-      await page.keyboard.type(resJson.content, { delay: 10 });
+      //await page.keyboard.type(resJson.content, { delay: 10 });
+      clipboardy.writeSync(resJson.content);
+      await page.keyboard.down('ControlLeft');
+      await page.keyboard.press('KeyV');
+      await page.keyboard.up('ControlLeft');
       await page.click('div[data-testid=photo-video-button]')
       await page.waitForSelector("input[data-testid=media-attachment-add-photo]")
       const input = await page.$("input[data-testid=media-attachment-add-photo]")
@@ -463,8 +476,12 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
       //await page.waitFor('div[aria-label="Create a post"]')
       //await page.click('div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
-      await page.keyboard.type(resJson.content, { delay: 10 });
-
+      //await page.keyboard.type(resJson.content, { delay: 10 });
+      clipboardy.writeSync(resJson.content);
+      await page.keyboard.down('ControlLeft');
+      await page.keyboard.press('KeyV');
+      await page.keyboard.up('ControlLeft');
+      
       const input = await page.$('input[data-testid=media-sprout]')
       imageFiles && imageFiles.length && await input.uploadFile(...imageFiles)
       videoFiles && videoFiles.length && await input.uploadFile(...videoFiles)
@@ -593,12 +610,12 @@ function scheduleTimeoutPost(resJson) {
   const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : moment.duration(0);
   let totalTime = parseInt(duration.asSeconds())
 
-  timeoutPendingPost.push(setTimeout(async () => {
-    printLog('wait running')
-    await waitForRunningDone()
-    printLog('posting now')
+  const timeoutPost = setTimeout(async () => {
+    // printLog('wait running')
+    // await waitForRunningDone()
+    printLog(`posting ${resJson.id}`)
+    delete timeoutPendingPost[resJson.id]
     arrPosted.push(resJson.id)
-    printLog(arrPosted)
     // clear post on data
     for (let i = arrPendingPost.length - 1; i >= 0; i--) {
       if (arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
@@ -738,7 +755,9 @@ function scheduleTimeoutPost(resJson) {
       const elementPost = document.getElementById(`${resJson.id}`)
       if (elementPost) elementPost.parentNode.removeChild(elementPost)
     }
-  }, Number(totalTime) * 1000))
+  }, Number(totalTime) * 1000)
+
+  timeoutPendingPost[resJson.id] = timeoutPost
 }
 
 function waitForRunningDone() {
@@ -922,6 +941,15 @@ function updateHistory({ data, type }) {
     case 'replace':
       clearHistory()
       arrHistory = data
+       // clear timeout pending post if user pause or delete or whatever on website
+      for(let i=0; i<arrHistory.length; i++){
+         for(var property in timeoutPendingPost){
+          if(property === arrHistory[i].contents.id && arrHistory[i].contents.status !== '2'){
+            clearTimeout(timeoutPendingPost[property])
+            delete timeoutPendingPost[property]
+          }
+        }
+      }
       let arrShowPendingPost = arrHistory.filter(item => {
         if (item.contents.status === '2' || item.contents.status === '3') return true
         return false
