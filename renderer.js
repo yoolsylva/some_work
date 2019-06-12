@@ -121,7 +121,6 @@ function closeApp() {
     return false
   })
   store.set('slot1.history', arrHistory)
-  store.set('slot1.posted', arrPosted)
   const remote = require('electron').remote;
   var window = remote.getCurrentWindow();
   window.close();
@@ -291,7 +290,6 @@ function clearDataInfo() {
   store.delete(`slot1.history`)
   store.delete(`slot1.pendingpost`)
   store.delete(`slot1.cookie`)
-  store.delete('slot.posted')
 }
 
 function saveDataInfo({ profile_id, name, img, username }) {
@@ -521,12 +519,6 @@ function getRandomBetween(min, max) {
 }
 
 function showPendingPost(data) {
-  var found = arrPosted.find(function(id) {
-    return id === resJson.id;
-  })
-  printLog(found)
-  if(found) return
-
   const exist = document.getElementById(`${data.contents.id}`) ? true : false
   let item
   if (!exist) {
@@ -596,22 +588,17 @@ function showPendingPost(data) {
 }
 
 function scheduleTimeoutPost(resJson) {
-  var found = arrPosted.find(function(id) {
-    return id === resJson.id;
-  })
-  printLog(found)
-  if(found) return
-
   const now = moment(new Date()); //todays date
   const end = moment(resJson.date_publish); // another date
   const duration = moment.duration(end.diff(now)) > 0 ? moment.duration(end.diff(now)) : moment.duration(0);
   let totalTime = parseInt(duration.asSeconds())
 
   timeoutPendingPost.push(setTimeout(async () => {
-    arrPosted.push(resJson.id)
     printLog('wait running')
     await waitForRunningDone()
     printLog('posting now')
+    arrPosted.push(resJson.id)
+    printLog(arrPosted)
     // clear post on data
     for (let i = arrPendingPost.length - 1; i >= 0; i--) {
       if (arrPendingPost[i].id === resJson.id) arrPendingPost.splice(i, 1);
@@ -620,12 +607,18 @@ function scheduleTimeoutPost(resJson) {
     if (elementPost) {
       elementPost.querySelector('.status-post').innerText = 'Đang post...'
       elementPost.querySelector('span img').setAttribute('src', `assets/img/play.png`)
+      elementPost.parentNode.prepend(elementPost)
     }
 
     let browser
     try {
       isRunning = true
       const profile_id = resJson.profile_id
+      notifier.notify({
+        title: 'Downloading...',
+        message: 'Đang tải hình ảnh và video',
+        sound: true,
+      });
       const imageFiles = await Promise.all(resJson.images.map((image, index) => {
         return download(image, `${index}.png`)
       })).catch(e => {
@@ -644,6 +637,11 @@ function scheduleTimeoutPost(resJson) {
           sound: true,
         })
       })
+      notifier.notify({
+        title: 'Dowloaded!',
+        message: 'Đã tải xong, bắt đầu post...',
+        sound: true,
+      });
       browser = await puppeteer.launch({
         headless: false,
         slowMo: 50,
@@ -787,14 +785,16 @@ async function schedulePost() {
     const resJson = await res.json()
     if (resJson.error) throw new Error(resJson.message)
     printLog(`receive new data:`)
-    console.log(resJson)
     resJson.data.forEach(data => {
       let found = false
       for (let i = 0; i < arrPendingPost.length; i++) {
         if (arrPendingPost[i].id === data.id) found = true
       }
-      console.log(found)
-      if (found) return
+      for (let i = 0; i < arrPosted.length; i++) {
+        if (arrPosted[i] === data.id) found = true
+      }
+      if(found) return
+
       arrPendingPost.push(data)
       arrPendingPost = arrPendingPost.sort((a, b) => {
         if (moment(a.date_publish) < moment(b.date_publish)) return 1
@@ -945,6 +945,10 @@ function updateHistory({ data, type }) {
         appendHistory({ data: arrShowHistoryPost[i] })
       }
       for (let i = 0; i < arrShowPendingPost.length; i++) {
+        let found = arrPosted.find(id => {
+          return id === arrShowPendingPost[i].contents.id
+        })
+        if(found) continue
         showPendingPost(arrShowPendingPost[i])
       }
 
@@ -979,7 +983,6 @@ async function main() {
     setMainScreen()
     const { profile_id, name, img } = getDataInfo()
     showDataInfo({ profile_id, name, img })
-    arrPosted = store.get('slot1.posted') || []
     arrHistory = store.get(`slot1.history`) || []
     updateHistory({ data: arrHistory, type: 'replace' })
   }
