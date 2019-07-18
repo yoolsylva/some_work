@@ -337,10 +337,11 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
         console.log(dialog.message());
         await dialog.accept();
       });
-      await page.goto('https://www.facebook.com/?locale=en_US', { timeout: 100000, waitUntil: 'networkidle0' });
+      await page.goto('https://www.facebook.com/?locale=en_US', { timeout: 100000, waitUntil: 'networkidle2' });
       await page.waitForXPath('//div[@aria-label="Create a post"]')
       await page.click('div[aria-label="Create a post"]')
       await clickDom(page, 'div[aria-label="Create a post"]')
+      await page.click('div[aria-label="Create a post"]')
 
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
       //await page.keyboard.type(resJson.content, { delay: 0 });
@@ -361,10 +362,11 @@ function postToUser({ page, profile_id, resJson, imageFiles, videoFiles }) {
         if (!isDisable.length) break
         await sleep(50)
       }
-      await page.click('div[aria-label="Create a post"]')
-      await sleep(1000)
-      await clickDom(page, 'div[aria-label="Create a post"]')
-      await clickDom(page, 'div[aria-label="Create a post"] button[type=submit]')
+      //await page.click('div[aria-label="Create a post"]')
+      await sleep(3000)
+      //await page.click('div[aria-label="Create a post"]')
+      //await clickDom(page, 'div[aria-label="Create a post"]')
+      //await clickDom(page, 'div[aria-label="Create a post"] button[type=submit]')
       await page.click('div[aria-label="Create a post"] button[type=submit]')
 
       page.on('response', async response => {
@@ -397,11 +399,12 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
         console.log(dialog.message());
         await dialog.accept();
       });
-      const url = `https://facebook.com/${page_id}?locale=en_US`
+      const url = `https://facebook.com/${page_id}?modal=admin_todo_tour&locale=en_US`
       await page.setViewport({ width: 800, height: 800 })
-      await page.goto(url, { timeout: 100000, waitUntil: 'networkidle0' });
+      await page.goto(url, { timeout: 100000, waitUntil: 'networkidle2' });
       await page.keyboard.press('KeyP');
-      //await page.click('div[aria-label="Create a post"]')
+      await page.click('div[aria-label="Create a post"]')
+      await clickDom(page, 'div[aria-label="Create a post"]')
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
       //await page.keyboard.type(resJson.content, { delay: 10 });
       clipboardy.writeSync(resJson.content);
@@ -419,13 +422,12 @@ async function postToPage({ page, page_id, imageFiles, resJson, videoFiles }) {
       await sleep(1000)
       while (true) {
         const isDisable = await page.evaluate(() => {
-          return document.querySelector('div[aria-label="Create a post"] button[type=submit]').disabled
+          return document.querySelector('div[aria-label="Create a post"] button[data-testid="react-composer-post-button"]').disabled
         })
         if (!isDisable) break
         await sleep(50)
       }
-      await page.click('div[aria-label="Create a post"]')
-      const share = await page.$('div[aria-label="Create a post"] button[type=submit]')
+      const share = await page.$('div[aria-label="Create a post"] button[data-testid="react-composer-post-button"]')
       await share.click()
       page.on('response', async response => {
         if ('xhr' !== response.request().resourceType() && response.request().method !== 'POST') {
@@ -460,21 +462,12 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
       });
       const url = `https://facebook.com/${group_id}?locale=en_US`
       await page.setViewport({ width: 800, height: 800 })
-      await page.goto(url, { timeout: 100000, waitUntil: 'networkidle0' });
-      // await page.waitForXPath('//*[@data-testid="status-attachment-mentions-input"] | //*[@data-testid="react-composer-root"]//*[@data-testid="status-attachment-selector"]')
-      // const inputText = await page.$x('//*[@data-testid="status-attachment-mentions-input"]//div | //*[@data-testid="react-composer-root"]//*[@data-testid="status-attachment-selector"]')
-      // if (!inputText.length) throw new Error('Not found input text in group!')
-      // await inputText[0].click()
-      // await sleep(1000)
-      // try {
-      //   await page.type('[data-testId="status-attachment-mentions-input"]', resJson.content)
-      // } catch (e) {
-      //   await page.keyboard.type(resJson.content, {delay: 10});
-      // }
+      await page.goto(url, { timeout: 100000, waitUntil: 'networkidle2' });
+    
       await page.keyboard.press('KeyP');
       await page.click('div[aria-label="Create a post"]')
-      //await page.waitFor('div[aria-label="Create a post"]')
-      //await page.click('div[aria-label="Create a post"]')
+      await clickDom(page, 'div[aria-label="Create a post"]')
+      
       await page.waitFor('div[aria-label="Create a post"] a[aria-label="Insert an emoji"]')
       //await page.keyboard.type(resJson.content, { delay: 10 });
       clipboardy.writeSync(resJson.content);
@@ -497,8 +490,8 @@ async function postToGroup({ page, group_id, imageFiles, resJson, videoFiles }) 
         if (!isDisable) break
         await sleep(50)
       }
-      await page.click('div[aria-label="Create a post"]')
-      const share = await page.$('div[aria-label="Create a post"] button[type=submit]')
+      //await page.click('div[aria-label="Create a post"]')
+      const share = await page.$('div[aria-label="Create a post"] button[data-testid=react-composer-post-button]')
       await share.click()
       page.on('response', async response => {
         if ('xhr' !== response.request().resourceType() && response.request().method !== 'POST') {

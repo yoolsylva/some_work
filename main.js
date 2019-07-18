@@ -65,7 +65,7 @@ app.on('activate', function () {
 
 
 ipcMain.on('message', (event, message) => {
-  console.log(message) // prints "ping"
+  console.log(JSON.stringify(message)) // prints "ping"
 })
 
 setInterval(() => {autoUpdater.checkForUpdates()}, 60000*15)
