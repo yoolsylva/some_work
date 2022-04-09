@@ -36,7 +36,7 @@
     "clipboardy": "^2.0.0",
     "electron-store": "^2.0.0",
     "electron-updater": "^3.2.3",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "node-fetch": "^2.3.0",
     "node-notifier": "^5.4.0",
     "puppeteer-core": "^1.13.0",
